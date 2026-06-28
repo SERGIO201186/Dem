@@ -872,49 +872,111 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
 <div id="view-config" class="view">
   <h2 style="font:700 1.1rem var(--sans)">⚙️ Configuración</h2>
 
-  <div class="card" style="border:2px solid var(--indigo);background:var(--indigo-lt)">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <span style="font-size:2rem">🔬</span>
-      <div>
-        <div style="font:700 15px var(--sans);color:var(--indigo)">Versión Demo</div>
-        <div style="font-size:12px;color:var(--txt2)">Explora todas las funciones del sistema. Los datos de ejemplo se reinician al recargar.</div>
+  <!-- ── PANEL DEMO (visible por defecto, se oculta al activar licencia) ── -->
+  <div id="cfg-demo-panel">
+    <div class="card" style="border:2px solid var(--indigo);background:var(--indigo-lt)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="font-size:2rem">🔬</span>
+        <div>
+          <div style="font:700 15px var(--sans);color:var(--indigo)">Modo Demo activo</div>
+          <div style="font-size:12px;color:var(--txt2)">Estás explorando FarmaPos PRO. Activa tu licencia para habilitar la sincronización con Google Sheets y guardar tus datos permanentemente.</div>
+        </div>
       </div>
-    </div>
-    <div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="font:700 12px var(--sans);color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">✅ Incluido en tu licencia</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">
-        <div>💊 POS con escáner de código de barras</div>
-        <div>📦 Inventario con alertas de stock</div>
-        <div>💰 Manejo de caja y cortes</div>
-        <div>📊 Reportes e historial</div>
-        <div>🖨 Impresión de tickets térmicos</div>
-        <div>☁️ Sincronización con Google Sheets</div>
-        <div>📱 Instala en celular, tablet o PC</div>
-        <div>🔒 Tus datos, en tu cuenta de Google</div>
+      <div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font:700 12px var(--sans);color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">✅ Incluido en tu licencia</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">
+          <div>💊 POS con escáner de código de barras</div>
+          <div>📦 Inventario con alertas de stock</div>
+          <div>💰 Manejo de caja y cortes</div>
+          <div>📊 Reportes e historial</div>
+          <div>🖨 Impresión de tickets térmicos</div>
+          <div>☁️ Sincronización con Google Sheets</div>
+          <div>📱 Instala en celular, tablet o PC</div>
+          <div>🔒 Tus datos, en tu cuenta de Google</div>
+        </div>
       </div>
+      <button class="btn btn-indigo btn-full" style="font-size:15px;padding:14px" onclick="openModal('modal-licencia')">
+        🔑 Ingresar clave de activación
+      </button>
     </div>
-    <div style="background:linear-gradient(135deg,var(--verde),var(--verde-dk));border-radius:10px;padding:16px;color:#fff;text-align:center">
-      <div style="font:700 14px var(--sans);margin-bottom:4px">¿Te interesa para tu farmacia?</div>
-      <div style="font-size:12px;opacity:.85;margin-bottom:12px">Instalación desde $1,500 MXN · Renta mensual desde $399/mes</div>
-      <a href="https://wa.me/521XXXXXXXXXX?text=Hola,%20vi%20el%20demo%20de%20FarmaPos%20y%20me%20interesa%20el%20sistema"
-        target="_blank"
-        style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--verde-dk);font:700 13px var(--sans);padding:10px 20px;border-radius:8px;text-decoration:none">
-        💬 Contactar por WhatsApp
-      </a>
+
+    <div class="card">
+      <div class="card-hd">🏪 Personaliza tu demo</div>
+      <p style="font-size:12px;color:var(--txt2);margin-bottom:14px">Ingresa los datos de tu farmacia para ver cómo aparecerán en los tickets de venta.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field" style="margin:0"><label>Nombre de la farmacia</label><input id="cfg-nombre" placeholder="Farmacia San Juan"></div>
+        <div class="field" style="margin:0"><label>RFC / Razón social</label><input id="cfg-rfc" placeholder="JSJ010101XXX"></div>
+        <div class="field" style="margin:0"><label>Teléfono</label><input id="cfg-tel" placeholder="228 000 0000"></div>
+        <div class="field" style="margin:0"><label>Dirección</label><input id="cfg-dir" placeholder="Calle, Col, Ciudad"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="guardarNegocio()">💾 Guardar en ticket</button>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-hd">🏪 Personaliza tu demo</div>
-    <p style="font-size:12px;color:var(--txt2);margin-bottom:14px">Ingresa los datos de tu farmacia para ver cómo aparecerán en los tickets de venta.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="field" style="margin:0"><label>Nombre de la farmacia</label><input id="cfg-nombre" placeholder="Farmacia San Juan"></div>
-      <div class="field" style="margin:0"><label>RFC / Razón social</label><input id="cfg-rfc" placeholder="JSJ010101XXX"></div>
-      <div class="field" style="margin:0"><label>Teléfono</label><input id="cfg-tel" placeholder="228 000 0000"></div>
-      <div class="field" style="margin:0"><label>Dirección</label><input id="cfg-dir" placeholder="Calle, Col, Ciudad"></div>
+  <!-- ── PANEL PRO (oculto, se muestra al validar licencia) ── -->
+  <div id="cfg-pro-panel" style="display:none">
+
+    <div class="card" style="border:2px solid var(--verde);background:var(--verde-lt);padding:14px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.4rem">🟢</span>
+          <div>
+            <div style="font:700 14px var(--sans);color:var(--verde-dk)">Licencia PRO activa</div>
+            <div id="pro-expiry-badge" style="font-size:12px;color:var(--verde-dk);margin-top:2px"></div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="cerrarSesionPro()">Cerrar sesión PRO</button>
+      </div>
     </div>
-    <button class="btn btn-primary" style="margin-top:12px" onclick="guardarNegocio()">💾 Guardar y ver en ticket</button>
-  </div>
+
+    <div class="card">
+      <div class="card-hd">🏪 Datos del negocio</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field" style="margin:0"><label>Nombre de la farmacia</label><input id="cfg-nombre-pro" placeholder="Farmacia San Juan"></div>
+        <div class="field" style="margin:0"><label>RFC / Razón social</label><input id="cfg-rfc-pro" placeholder="JSJ010101XXX"></div>
+        <div class="field" style="margin:0"><label>Teléfono</label><input id="cfg-tel-pro" placeholder="228 000 0000"></div>
+        <div class="field" style="margin:0"><label>Dirección</label><input id="cfg-dir-pro" placeholder="Calle, Col, Ciudad"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="guardarNegocioPro()">💾 Guardar</button>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">🔗 Google Sheets — Base de datos</div>
+      <div id="sheets-status-box" class="sheets-status">
+        <span id="sheets-dot">⚪</span>
+        <span id="sheets-txt">Sin configurar — los datos se guardan localmente</span>
+      </div>
+      <div class="field">
+        <label>URL del Apps Script (Web App)</label>
+        <input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/…/exec">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="guardarConfig()">💾 Guardar y probar</button>
+        <button class="btn btn-ghost" onclick="testConexion()">🔄 Probar conexión</button>
+        <button class="btn btn-ghost" onclick="syncNow()">⬆ Sincronizar ahora</button>
+      </div>
+      <details style="margin-top:14px">
+        <summary style="font:600 12px var(--sans);cursor:pointer;color:var(--indigo)">📋 Instrucciones de configuración</summary>
+        <div style="font-size:12px;color:var(--txt2);margin-top:10px;line-height:1.7;background:var(--bg);padding:12px;border-radius:8px">
+          <strong>1.</strong> Ve a <a href="https://sheets.google.com" target="_blank" style="color:var(--indigo)">sheets.google.com</a> y crea una hoja llamada <strong>FarmaPos</strong>.<br>
+          <strong>2.</strong> Ve a Extensiones → Apps Script y pega el código.<br>
+          <strong>3.</strong> Ejecuta la función <code>setupSheets</code> una vez.<br>
+          <strong>4.</strong> Implementa como Aplicación Web → Cualquier persona → copia la URL.<br>
+          <strong>5.</strong> Pégala arriba y guarda.<br><br>
+          <button class="btn btn-ghost btn-sm" onclick="copyScript()">📋 Copiar código Apps Script</button>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">⚠️ Zona de peligro</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="exportDB()">⬇ Exportar datos</button>
+        <button class="btn btn-danger btn-sm" onclick="borrarTodo()">🗑 Borrar todos los datos</button>
+      </div>
+    </div>
+
+  </div><!-- /cfg-pro-panel -->
 </div>
 
 
@@ -1146,7 +1208,6 @@ const LICENCIAS = {
   'FARMA-2025-DEMO': { expiry: null,         label: 'Demo interno' },
   'FARMA-SERCH-01':  { expiry: '2025-12-31', label: 'Cliente prueba 1' },
   'FARMA-SERCH-02':  { expiry: '2026-06-30', label: 'Cliente prueba 2' },
-  'FARMA-XALAPA-01': { expiry: '2026-06-29', label: 'Farmacia San Juan' },
   // Agrega aquí más claves para cada cliente
 };
 
