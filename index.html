@@ -1039,6 +1039,116 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
 
 <script>
 // ══════════════════════════════════════════════════════════
+//  UTILS & CORE (funciones base)
+// ══════════════════════════════════════════════════════════
+const mxn = n => '$' + (+n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6).toUpperCase();
+const hoy  = () => new Date().toISOString().slice(0,10);
+function getCats(){ return [...new Set(db.productos.map(p=>p.cat).filter(Boolean))].sort(); }
+function isExpiringSoon(d){ if(!d)return false; return (new Date(d)-new Date())/(86400000)<60; }
+
+// ══════════════════════════════════════════════════════════
+//  PERSIST (localStorage)
+// ══════════════════════════════════════════════════════════
+function save()    { try { localStorage.setItem('fp2_db',  JSON.stringify(db));  } catch(e){} }
+function saveCfg() { try { localStorage.setItem('fp2_cfg', JSON.stringify(cfg)); } catch(e){} }
+function load() {
+  try {
+    const d = localStorage.getItem('fp2_db');
+    const c = localStorage.getItem('fp2_cfg');
+    if (d) db  = JSON.parse(d);
+    if (c) cfg = { ...cfg, ...JSON.parse(c) };
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════════
+let _toastT;
+function toast(msg, type='ok'){
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.className   = 'show ' + type;
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ══════════════════════════════════════════════════════════
+//  MODALS
+// ══════════════════════════════════════════════════════════
+function openModal(id)  { const el=document.getElementById(id); if(el) el.classList.add('open'); }
+function closeModal(id) { const el=document.getElementById(id); if(el) el.classList.remove('open'); }
+
+// ══════════════════════════════════════════════════════════
+//  NAVEGACIÓN — showView / showTab
+// ══════════════════════════════════════════════════════════
+function showView(v, el) {
+  // Ocultar todas las vistas
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  const target = document.getElementById('view-' + v);
+  if (target) target.classList.add('active');
+
+  // Quitar active de todos los botones de nav (desktop y móvil)
+  document.querySelectorAll('.dnav-btn, .bnav-btn').forEach(b => b.classList.remove('active'));
+
+  // Poner active en el botón pulsado y en su gemelo (desktop↔móvil)
+  if (el) {
+    el.classList.add('active');
+    const dBtns = [...document.querySelectorAll('.dnav-btn')];
+    const mBtns = [...document.querySelectorAll('.bnav-btn')];
+    const dIdx  = dBtns.indexOf(el);
+    const mIdx  = mBtns.indexOf(el);
+    if (dIdx >= 0 && mBtns[dIdx]) mBtns[dIdx].classList.add('active');
+    if (mIdx >= 0 && dBtns[mIdx]) dBtns[mIdx].classList.add('active');
+  }
+
+  // Acciones por vista
+  if (v === 'pos')        setTimeout(() => { const b=document.getElementById('pos-barcode'); if(b) b.focus(); }, 100);
+  if (v === 'inventario') renderInv();
+  if (v === 'caja')       renderCaja();
+  if (v === 'reportes')   renderReportes();
+}
+
+function showTab(id, el) {
+  // Ocultar paneles hermanos dentro del mismo padre
+  const panel = document.getElementById(id);
+  if (!panel) return;
+  const parent = panel.parentElement;
+  [...parent.children].forEach(c => {
+    if (c.id && c !== panel && !c.classList.contains('tabs')) c.style.display = 'none';
+  });
+  panel.style.display = 'block';
+
+  // Active en tabs
+  if (el) {
+    el.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Render del panel activo
+  if (id === 'r-ventas') renderHistorial();
+  if (id === 'r-top')    renderTop();
+  if (id === 'r-cortes') renderCortes();
+}
+
+// Stub para sync (demo no usa Sheets)
+function setSyncState(){}
+async function saveAndSync() { save(); }
+
+// ══════════════════════════════════════════════════════════
+//  guardarNegocio (demo — solo localStorage)
+// ══════════════════════════════════════════════════════════
+function guardarNegocio() {
+  cfg.nombre = (document.getElementById('cfg-nombre')||{}).value || '';
+  cfg.rfc    = (document.getElementById('cfg-rfc')||{}).value    || '';
+  cfg.tel    = (document.getElementById('cfg-tel')||{}).value    || '';
+  cfg.dir    = (document.getElementById('cfg-dir')||{}).value    || '';
+  saveCfg();
+  toast('Datos del negocio guardados ✓ — aparecerán en tus tickets');
+}
+
+
 //  APPS SCRIPT CODE (for user to copy)
 // ══════════════════════════════════════════════════════════
 const APPS_SCRIPT_CODE = `
@@ -1944,6 +2054,47 @@ function borrarTodo() {
   localStorage.removeItem('fp2_db');
   location.reload();
 }
+
+// ══════════════════════════════════════════════════════════
+//  INIT — Ejecución al cargar la página
+// ══════════════════════════════════════════════════════════
+load();
+if (!db.productos.length) loadDemoData();
+updateBadge();
+renderPosGrid();
+renderInv();
+renderCaja();
+renderReportes();
+
+// Rellenar campos de configuración del negocio
+const _cfgNombre = document.getElementById('cfg-nombre');
+const _cfgRfc    = document.getElementById('cfg-rfc');
+const _cfgTel    = document.getElementById('cfg-tel');
+const _cfgDir    = document.getElementById('cfg-dir');
+if (_cfgNombre) _cfgNombre.value = cfg.nombre || '';
+if (_cfgRfc)    _cfgRfc.value    = cfg.rfc    || '';
+if (_cfgTel)    _cfgTel.value    = cfg.tel    || '';
+if (_cfgDir)    _cfgDir.value    = cfg.dir    || '';
+
+// Estado de caja
+if (db.caja.abierta) {
+  const cc = document.getElementById('caja-closed');
+  const co = document.getElementById('caja-open');
+  if (cc) cc.style.display = 'none';
+  if (co) co.style.display = 'block';
+}
+
+// Cerrar modals al hacer clic en el fondo
+document.querySelectorAll('.modal-bg').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); })
+);
+
+// Enfocar escáner al iniciar
+setTimeout(() => {
+  const bc = document.getElementById('pos-barcode');
+  if (bc) bc.focus();
+}, 400);
+
 </script>
 </body>
 </html>
