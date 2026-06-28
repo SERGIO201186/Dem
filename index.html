@@ -1,1 +1,2343 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Demo ODS"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0f172a"/>
+<title>Funeraria Demo — Control Operativo</title>
+<style>
+:root{
+  --bg:#0f172a;--bg2:#1e293b;--bg3:#334155;
+  --gold:#c9a84c;--gold2:#e6c96a;--golddim:#7a5f1e;
+  --red:#ef4444;--red2:#dc2626;
+  --green:#22c55e;--green2:#16a34a;
+  --blue:#3b82f6;--amber:#f59e0b;
+  --text:#f8fafc;--text2:#94a3b8;--text3:#64748b;
+  --border:#334155;--border2:#475569;
+  --r:10px;--rsm:6px;
+  --shadow:0 4px 24px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;overscroll-behavior:none}
+input,select,textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);color:var(--text);font:inherit;padding:8px 10px;width:100%;outline:none;transition:border .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+select option{background:var(--bg2)}
+label.lbl{display:block;font-size:11px;color:var(--text2);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+button{cursor:pointer;font:inherit;border:none;border-radius:var(--rsm);padding:9px 16px;transition:filter .15s,transform .1s}
+button:active{transform:scale(.97)}
+.bg{background:var(--gold);color:#0f172a;font-weight:700}
+.bg:hover{filter:brightness(1.1)}
+.bo{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.bo:hover{border-color:var(--gold);color:var(--gold)}
+.br{background:var(--red2);color:#fff;font-weight:600}
+.bgr{background:var(--green2);color:#fff;font-weight:600}
+.bsm{padding:5px 11px;font-size:12px}
+.f{margin-bottom:11px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.bg-g{background:rgba(34,197,94,.15);color:var(--green)}
+.bg-r{background:rgba(239,68,68,.15);color:var(--red)}
+.bg-a{background:rgba(245,158,11,.15);color:var(--amber)}
+.bg-b{background:rgba(59,130,246,.15);color:var(--blue)}
+.bg-gr{background:rgba(100,116,139,.18);color:var(--text2)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:12px}
+.st{font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.07em;margin-bottom:11px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.div{height:1px;background:var(--border);margin:13px 0}
+/* APP */
+#app{display:flex;flex-direction:column;height:100vh}
+/* TOPBAR */
+#topbar{display:flex;align-items:center;gap:10px;background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 14px;position:sticky;top:0;z-index:100;min-height:52px}
+#topbar .logo{font-size:13px;font-weight:800;color:var(--gold);letter-spacing:.07em;white-space:nowrap}
+#topbar .sp{flex:1}
+#sync-ind{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+#sdot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+#sdot.off{background:var(--red)}
+#sdot.sy{background:var(--amber);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+#mbtn{background:none;border:none;color:var(--text2);font-size:20px;padding:4px}
+/* SIDEBAR */
+#sb{position:fixed;top:0;left:-265px;width:265px;height:100%;background:var(--bg2);border-right:1px solid var(--border);z-index:300;transition:left .25s;overflow-y:auto;display:flex;flex-direction:column}
+#sb.open{left:0}
+#sov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:299;display:none}
+#sov.show{display:block}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:18px 14px 14px;border-bottom:1px solid var(--border)}
+.sb-ico{width:36px;height:36px;background:var(--gold);border-radius:8px;display:grid;place-items:center;color:#0f172a;font-weight:800;font-size:16px;flex-shrink:0}
+.sb-name{font-size:14px;font-weight:700}
+.sb-sub{font-size:11px;color:var(--text3)}
+.nav-sec{padding:10px 12px 4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rsm);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .15s;margin:1px 6px;border:none;background:none;width:calc(100% - 12px);text-align:left}
+.ni:hover{background:var(--bg3);color:var(--text)}
+.ni.act{background:rgba(201,168,76,.15);color:var(--gold)}
+.ni .ic{font-size:15px;width:18px;text-align:center}
+.nbdg{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.sb-ft{padding:12px 8px;border-top:1px solid var(--border);margin-top:auto}
+/* MAIN */
+#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.page{display:none;padding:13px;max-width:820px;margin:0 auto}
+.page.act{display:block}
+/* LOGIN */
+#login{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.l-logo{width:60px;height:60px;background:var(--gold);border-radius:14px;display:grid;place-items:center;color:#0f172a;font-size:26px;font-weight:800;margin-bottom:18px}
+.l-title{font-size:21px;font-weight:800;margin-bottom:3px;text-align:center}
+.l-sub{font-size:13px;color:var(--text3);margin-bottom:8px;text-align:center}
+.l-tabs{display:flex;gap:0;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:22px;width:100%;max-width:300px}
+.l-tab{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:none;transition:all .2s}
+.l-tab.act{background:var(--gold);color:#0f172a}
+/* PIN */
+#pin-panel{display:flex;flex-direction:column;align-items:center;width:100%;max-width:300px}
+.pdots{display:flex;gap:10px;margin-bottom:22px}
+.pd{width:13px;height:13px;border-radius:50%;border:2px solid var(--border2);transition:background .15s}
+.pd.on{background:var(--gold);border-color:var(--gold)}
+.ppad{display:grid;grid-template-columns:repeat(3,68px);gap:8px}
+.pb{width:68px;height:52px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);font-size:19px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
+.pb:active{background:var(--gold);color:#0f172a;transform:scale(.95)}
+/* USER/PASS */
+#up-panel{display:none;flex-direction:column;gap:10px;width:100%;max-width:300px}
+#up-panel.show{display:flex}
+.l-status{font-size:12px;color:var(--text3);text-align:center;min-height:16px;margin-top:10px}
+/* STATS */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(min-width:600px){.sg{grid-template-columns:repeat(4,1fr)}}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px}
+.sc .v{font-size:24px;font-weight:800;line-height:1}
+.sc .l{font-size:11px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.05em}
+.sc.ac{border-color:var(--golddim)}
+.sc.ac .v{color:var(--gold)}
+/* ODS CARD */
+.oc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:9px;cursor:pointer;transition:border .15s}
+.oc:hover{border-color:var(--golddim)}
+.oc .fo{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.06em}
+.oc .fn{font-size:15px;font-weight:700;margin:2px 0}
+.oc .mt{font-size:12px;color:var(--text2)}
+.oc .fr{display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding-top:7px;border-top:1px solid var(--border)}
+/* TABS */
+.tabs{display:flex;gap:3px;background:var(--bg2);border-radius:var(--r);padding:4px;margin-bottom:13px}
+.tab{flex:1;text-align:center;padding:7px;border-radius:var(--rsm);font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;border:none;background:none}
+.tab.act{background:var(--bg3);color:var(--gold)}
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:400;display:none;align-items:flex-end;justify-content:center}
+.mo.show{display:flex}
+@media(min-width:600px){.mo{align-items:center}}
+.mb{background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-width:660px;max-height:90vh;overflow-y:auto;padding:18px;position:relative}
+@media(min-width:600px){.mb{border-radius:16px;max-height:86vh}}
+.mc{position:absolute;top:13px;right:13px;background:var(--bg3);border:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:var(--text2);font-size:15px;cursor:pointer}
+.mt2{font-size:16px;font-weight:800;margin-bottom:14px;padding-right:34px}
+/* PAGARE */
+.pagare-box{background:var(--bg);border:1px solid var(--golddim);border-radius:var(--r);padding:13px;margin-top:10px}
+/* ALERT EQUIPO */
+.aeq{display:flex;align-items:center;gap:10px;padding:9px;background:var(--bg);border-radius:var(--rsm);margin-bottom:6px;border-left:3px solid var(--amber)}
+.aeq.venc{border-left-color:var(--red)}
+/* TOAST */
+#toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg2);border:1px solid var(--border);border-radius:22px;padding:8px 18px;font-size:13px;color:var(--text);box-shadow:var(--shadow);opacity:0;transition:all .3s;z-index:600;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* OFFLINE */
+#offbar{background:var(--red2);color:#fff;text-align:center;font-size:12px;padding:5px;display:none}
+/* LOADER */
+#loader{position:fixed;inset:0;background:var(--bg);z-index:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px}
+.spin{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* TRASLADO INFO */
+.km-info{background:rgba(201,168,76,.1);border:1px solid var(--golddim);border-radius:var(--rsm);padding:9px 12px;font-size:12px;color:var(--gold2);margin-top:6px}
+@media print{#topbar,#sb,#toast,#login,#loader,.bg,.bo,.br,.bgr,.mc{display:none!important}body{background:#fff;color:#000}}
+
+/* ── DOCUMENTOS IMPRIMIBLES (hoja carta, 1 doc = 1 página, sin saltos internos) ── */
+@page{size:letter;margin:0.45in 0.5in}
+.doc-print{
+  font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;background:#fff;
+  width:7.5in;height:10.1in;margin:0 auto;padding:0;overflow:hidden;
+  box-sizing:border-box;page-break-after:always;break-after:page;page-break-inside:avoid;
+  display:flex;flex-direction:column;font-size:10pt;line-height:1.32;
+}
+.doc-print:last-child{page-break-after:auto;break-after:auto}
+.doc-print *{box-sizing:border-box}
+.doc-print table{width:100%;border-collapse:collapse}
+.doc-print td,.doc-print th{border:1px solid #c9b87a;padding:4px 6px;font-size:9.5pt;vertical-align:top}
+.doc-print thead th{background:#0f172a;color:#fff;font-weight:700}
+.doc-print tbody tr:nth-child(even){background:#f7f3e8}
+.doc-print tfoot td,.doc-print tr.doc-total-row td{background:#0f172a;color:#fff;font-weight:700}
+.doc-hd{text-align:center;border-bottom:3px solid #c9a84c;padding-bottom:8px;margin-bottom:10px;background:linear-gradient(to bottom,#fbf8ef,#fff)}
+.doc-hd h1{font-size:14pt;margin:0;letter-spacing:.04em;color:#0f172a}
+.doc-hd .sub{font-size:9pt;color:#5a5a5a;margin-top:2px}
+.doc-hd .tag{display:inline-block;margin-top:6px;font-size:9pt;font-weight:700;background:#0f172a;color:#e6c96a;padding:3px 12px;border-radius:3px;letter-spacing:.05em;border:1px solid #c9a84c}
+.doc-sec-title{font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#0f172a;color:#e6c96a;padding:4px 8px;margin:10px 0 4px;border-left:4px solid #c9a84c}
+.doc-row2{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;font-size:9.5pt;margin-bottom:3px}
+.doc-foot{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:18px;text-align:center;font-size:8.5pt;padding-top:30px;border-top:1px solid #e6dcb8}
+.doc-foot .ln{border-top:1.5px solid #0f172a;margin-bottom:3px;height:1px}
+.doc-foot img.firma-print{max-height:55px;display:block;margin:0 auto 2px}
+.doc-clause{font-size:8.8pt;text-align:justify;margin-bottom:5px;line-height:1.28}
+.doc-clause b{color:#0f172a}
+@media print{
+  body *{visibility:hidden}
+  #print-area,#print-area *{visibility:visible}
+  #print-area{position:absolute!important;top:0!important;left:0!important;width:100%!important;display:block!important}
+  .doc-print *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<div id="loader"><div class="spin"></div><div style="color:var(--text2);font-size:13px">Cargando sistema demo…</div></div>
+<div id="offbar">Sin conexión — Modo offline activo</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login">
+  <div class="l-logo">D</div>
+  <div class="l-title">SISTEMA DEMO</div>
+  <div class="l-sub">Control Operativo de Servicios</div>
+  <div class="l-tabs">
+    <button class="l-tab act" onclick="switchLoginTab('pin',this)">PIN</button>
+    <button class="l-tab" onclick="switchLoginTab('up',this)">Usuario</button>
+  </div>
+
+  <!-- PIN -->
+  <div id="pin-panel">
+    <div class="pdots"><div class="pd" id="pd0"></div><div class="pd" id="pd1"></div><div class="pd" id="pd2"></div><div class="pd" id="pd3"></div></div>
+    <div class="ppad">
+      <button class="pb" onclick="pinP(1)">1</button><button class="pb" onclick="pinP(2)">2</button><button class="pb" onclick="pinP(3)">3</button>
+      <button class="pb" onclick="pinP(4)">4</button><button class="pb" onclick="pinP(5)">5</button><button class="pb" onclick="pinP(6)">6</button>
+      <button class="pb" onclick="pinP(7)">7</button><button class="pb" onclick="pinP(8)">8</button><button class="pb" onclick="pinP(9)">9</button>
+      <button class="pb" onclick="pinDel()" style="font-size:13px;color:var(--text3)">⌫</button>
+      <button class="pb" onclick="pinP(0)">0</button>
+      <button class="pb" onclick="doLogin()" style="background:var(--gold);color:#0f172a;font-size:11px;font-weight:700">OK</button>
+    </div>
+  </div>
+
+  <!-- Usuario+Contraseña -->
+  <div id="up-panel">
+    <div class="f"><label class="lbl">Usuario</label><input id="l-user" type="text" autocomplete="username"/></div>
+    <div class="f"><label class="lbl">Contraseña</label><input id="l-pass" type="password" autocomplete="current-password"/></div>
+    <button class="bg" style="width:100%" onclick="doLogin()">Iniciar Sesión</button>
+  </div>
+
+  <div class="l-status" id="l-status"></div>
+  <div style="font-size:11px;color:var(--text3);margin-top:12px;text-align:center" id="offline-login-note"></div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app" style="display:none">
+  <div id="topbar">
+    <button id="mbtn" onclick="toggleSB()">☰</button>
+    <div class="logo">🏛 FUNERARIA DEMO</div>
+    <div class="sp"></div>
+    <div id="sync-ind"><div id="sdot"></div><span id="stext">EN LÍNEA</span></div>
+  </div>
+  <div id="demo-banner" style="background:#7a1f1f;color:#fff;text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:5px 8px;position:sticky;top:0;z-index:50">
+    ⚠ MODO DEMOSTRACIÓN — Datos de ejemplo. No usar para operación real ni capturar información de clientes reales.
+  </div>
+  <div id="sov" onclick="closeSB()"></div>
+  <div id="sb">
+    <div class="sb-logo">
+      <div class="sb-ico">D</div>
+      <div><div class="sb-name">FUNERARIA DEMO</div><div class="sb-sub" id="user-rol">OPERATIVO</div></div>
+    </div>
+    <div class="nav-sec">Operaciones</div>
+    <button class="ni act" onclick="navTo('dash')"><span class="ic">📊</span>Resumen de Turno</button>
+    <button class="ni" onclick="navTo('nueva')"><span class="ic">➕</span>Nueva Orden (ODS)</button>
+    <button class="ni" onclick="navTo('tablero')"><span class="ic">📋</span>Tablero Logístico</button>
+    <button class="ni" onclick="navTo('equipos')"><span class="ic">📦</span>Equipos Velación<span class="nbdg" id="bdg-eq">0</span></button>
+    <button class="ni" onclick="navTo('pagos')"><span class="ic">💰</span>Pagos Pendientes<span class="nbdg" id="bdg-pg">0</span></button>
+    <button class="ni" onclick="window.open(TIENDA_VIRTUAL_VISUAL_URL,'_blank')"><span class="ic">🛍</span>Tienda Virtual</button>
+    <div class="nav-sec">Sistema</div>
+    <button class="ni" data-admin-only onclick="navTo('colab')"><span class="ic">👥</span>Colaboradores</button>
+    <button class="ni" data-admin-only onclick="navTo('nube')"><span class="ic">☁️</span>Sincronización Nube</button>
+    <div class="sb-ft">
+      <button class="ni bo" style="width:100%;justify-content:center;margin:0" onclick="logout()">🔐 Cerrar Sesión</button>
+    </div>
+  </div>
+
+  <div id="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page act" id="page-dash">
+      <div class="st">Resumen de Turno</div>
+      <div class="sg">
+        <div class="sc ac"><div class="v" id="st-tot">0</div><div class="l">ODS Totales</div></div>
+        <div class="sc"><div class="v" id="st-act">0</div><div class="l">Activas</div></div>
+        <div class="sc"><div class="v" id="st-eq">0</div><div class="l">Equipos Inst.</div></div>
+        <div class="sc"><div class="v" id="st-pend" style="color:var(--red)">$0</div><div class="l">Por Cobrar</div></div>
+      </div>
+      <div class="card"><div class="st">Alertas — Equipos por Recoger</div><div id="box-alertas"><div style="color:var(--text3);font-size:13px">Sin alertas.</div></div></div>
+      <div class="card">
+        <div class="st">Estado del Sistema</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Conexión Nube</span><span id="est-nube" class="badge bg-gr">Sin configurar</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Cambios pendientes</span><span id="est-q">0</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Última sincronía</span><span id="est-sync" style="color:var(--text3);font-size:12px">Nunca</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Usuario activo</span><span id="est-user" style="color:var(--text2)">—</span></div>
+        </div>
+      </div>
+      <div class="card"><div class="st">Tareas del Turno</div><div id="box-tareas" style="color:var(--text3);font-size:13px">Cargando…</div></div>
+    </div>
+
+    <!-- ── NUEVA ODS ── -->
+    <div class="page" id="page-nueva">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px">
+        <div class="st" style="margin:0;border:none;padding:0">Nueva Orden de Servicio</div>
+        <div style="font-size:12px;color:var(--gold);font-weight:700" id="folio-disp">ODS-XXXX</div>
+      </div>
+
+      <!-- DATOS GENERALES -->
+      <div class="card">
+        <div class="st">Datos del Titular y Finado</div>
+        <div class="f"><label class="lbl">Fallecido / Finado *</label><input id="o-fallecido" type="text"/></div>
+        <div class="f"><label class="lbl">Nombre del Contratante *</label><input id="o-contratante" type="text"/></div>
+        <div class="f"><label class="lbl">Teléfono de Contacto *</label><input id="o-tel" type="tel" placeholder="10 dígitos"/></div>
+        <div class="g2">
+          <div class="f"><label class="lbl">Calle y Número</label><input id="o-calle" type="text"/></div>
+          <div class="f"><label class="lbl">Colonia</label><input id="o-colonia" type="text"/></div>
+        </div>
+        <div class="g2">
+          <div class="f"><label class="lbl">Localidad</label><input id="o-localidad" type="text"/></div>
+          <div class="f"><label class="lbl">Municipio</label><input id="o-municipio" type="text"/></div>
+        </div>
+      </div>
+
+      <!-- MODALIDAD -->
+      <div class="card">
+        <div class="st">Modalidad de Servicio</div>
+        <div class="f"><label class="lbl">Tipo *</label>
+          <select id="o-modalidad" onchange="toggleMod()">
+            <option value="INHUMACION">INHUMACIÓN</option>
+            <option value="CREMACION">CREMACIÓN</option>
+          </select>
+        </div>
+        <div id="blq-ataud">
+          <div class="f">
+            <label class="lbl">Ataúd Disponible en Inventario *</label>
+            <select id="o-ataud-id" onchange="seleccionarProducto('ataud')">
+              <option value="">-- Cargando inventario... --</option>
+            </select>
+          </div>
+          <div class="g2">
+            <div class="f"><label class="lbl">Ataúd Seleccionado</label><input id="o-ataud-nom" type="text" readonly style="background:var(--bg)"/></div>
+            <div class="f"><label class="lbl">Costo del Ataúd ($)</label><input id="o-ataud-costo" type="number" min="0" readonly style="background:var(--bg)"/></div>
+          </div>
+          <div id="ataud-sin-stock" style="display:none;font-size:12px;color:var(--amber);margin-top:4px">⚠ No hay ataúdes disponibles en inventario. Repórtalo a la tienda virtual.</div>
+        </div>
+        <div id="blq-cremacion" style="display:none">
+          <div class="f"><label class="lbl">Tipo de Cremación</label>
+            <select id="o-tipo-crem"><option value="CON_VELACION">CON VELACIÓN</option><option value="DIRECTA">DIRECTA</option></select>
+          </div>
+          <div class="f">
+            <label class="lbl">Paquete de Cremación Disponible *</label>
+            <select id="o-urna-id" onchange="seleccionarProducto('urna')">
+              <option value="">-- Cargando inventario... --</option>
+            </select>
+          </div>
+          <div class="g2">
+            <div class="f"><label class="lbl">Paquete Seleccionado</label><input id="o-urna-nom" type="text" readonly style="background:var(--bg)"/></div>
+            <div class="f"><label class="lbl">Costo del Paquete ($)</label><input id="o-urna-costo" type="number" min="0" readonly style="background:var(--bg)"/></div>
+          </div>
+          <div id="urna-sin-stock" style="display:none;font-size:12px;color:var(--amber);margin-top:4px">⚠ No hay paquetes disponibles en inventario. Repórtalo a la tienda virtual.</div>
+
+          <div class="div"></div>
+          <div class="f">
+            <label class="lbl">¿Cambiar la urna incluida? (costo extra, opcional)</label>
+            <select id="o-urna-cambio-id" onchange="seleccionarUrnaCambio()">
+              <option value="">-- Mantener la urna incluida en el paquete --</option>
+            </select>
+          </div>
+          <div class="g2" id="blq-urna-cambio-detalle" style="display:none">
+            <div class="f"><label class="lbl">Urna Elegida</label><input id="o-urna-cambio-nom" type="text" readonly style="background:var(--bg)"/></div>
+            <div class="f"><label class="lbl">Costo Extra ($)</label><input id="o-urna-cambio-costo" type="number" min="0" readonly style="background:var(--bg);color:var(--amber)"/></div>
+          </div>
+          <div id="urna-cambio-sin-stock" style="display:none;font-size:12px;color:var(--text3);margin-top:4px">No hay urnas adicionales disponibles en el catálogo por el momento.</div>
+
+          <div class="f" style="margin-top:6px"><label class="lbl">Costo Adicional ($)</label><input id="o-crem-extra" type="number" min="0" oninput="calcTotal()"/></div>
+          <div class="f" style="margin-top:6px"><label class="lbl">Exceso de Peso</label>
+            <select id="o-exceso" onchange="calcTotal()">
+              <option value="NINGUNO" data-c="0">SIN EXCESO ($0)</option>
+              <option value="A" data-c="3000">101–120 KG (+$3,000)</option>
+              <option value="B" data-c="5000">121–140 KG (+$5,000)</option>
+              <option value="C" data-c="8000">140–160 KG (+$8,000)</option>
+              <option value="OTRO" data-c="0">OTRO — ingrese manual</option>
+            </select>
+          </div>
+          <div class="f"><label class="lbl">Objetos en el Cuerpo (riesgo en cámara de cremación)</label>
+            <select id="o-obj-cuerpo" onchange="calcTotal()">
+              <option value="NINGUNO" data-c="0">NINGUNO ($0)</option>
+              <option value="MARCAPASOS" data-c="800">MARCAPASOS (+$800)</option>
+              <option value="DENTADURA" data-c="0">DENTADURA POSTIZA ($0)</option>
+              <option value="CATETER" data-c="0">CATÉTER / VÍA ($0)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMBALSAMADO -->
+      <div class="card">
+        <div class="st">Embalsamado</div>
+        <div class="f"><label class="lbl">Tipo *</label>
+          <select id="o-emb" onchange="calcTotal()">
+            <option value="NINGUNO" data-c="0">NINGUNO ($0)</option>
+            <option value="PATOLOGICO" data-c="0">PATOLÓGICO ($0)</option>
+            <option value="MEDICO_LEGAL" data-c="0">MÉDICO LEGAL ($0)</option>
+            <option value="PUTREFACTO" data-c="7000">PUTREFACTO ($7,000)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TRAMITES -->
+      <div class="card">
+        <div class="st">Trámites</div>
+        <div class="g2" style="gap:8px;margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" id="tr-registro" onchange="calcTotal()"/>Registro Civil</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" id="tr-fge" onchange="calcTotal()"/>FGE / Fiscalía</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" id="tr-periciales" onchange="calcTotal()"/>Servicios Periciales</label>
+        </div>
+        <div class="f"><label class="lbl">Certificación</label>
+          <select id="tr-cert" onchange="calcTotal()">
+            <option value="NO" data-c="0">NO APLICA ($0)</option>
+            <option value="SI" data-c="1000">CON COSTO (+$1,000)</option>
+          </select>
+        </div>
+        <div class="f"><label class="lbl">Permiso 48 Horas</label>
+          <select id="tr-p48" onchange="calcTotal()">
+            <option value="NO" data-c="0">NO APLICA ($0)</option>
+            <option value="SI" data-c="1000">CON COSTO (+$1,000)</option>
+          </select>
+        </div>
+        <div class="f"><label class="lbl">Permiso de Traslado</label>
+          <select id="tr-traslado" onchange="calcTotal()">
+            <option value="NO" data-c="0">NO APLICA ($0)</option>
+            <option value="SI" data-c="1000">CON COSTO (+$1,000)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- VELACIÓN -->
+      <div class="card">
+        <div class="st">Velación</div>
+        <div class="f"><label class="lbl">Modalidad *</label>
+          <select id="o-vel-tipo" onchange="toggleVel()">
+            <option value="DOMICILIO">En Domicilio (Equipo)</option>
+            <option value="SALA">Sala de Velación (Interna)</option>
+          </select>
+        </div>
+        <div id="blq-dom">
+          <div class="g3">
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text);text-transform:none;letter-spacing:0"><input type="checkbox" id="eq-biombo"/>Biombo</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text);text-transform:none;letter-spacing:0"><input type="checkbox" id="eq-base"/>Base</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text);text-transform:none;letter-spacing:0"><input type="checkbox" id="eq-cristo"/>Cristo</label>
+          </div>
+          <div class="f" style="margin-top:8px">
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text);text-transform:none;letter-spacing:0">
+              <input type="checkbox" id="eq-cande" onchange="toggleCandeleros()"/>Candeleros
+            </label>
+            <div id="blq-cande-piezas" style="display:none;margin-top:6px">
+              <select id="eq-cande-piezas">
+                <option value="2">2 piezas</option>
+                <option value="4">4 piezas</option>
+              </select>
+            </div>
+          </div>
+          <div class="g2" style="margin-top:10px">
+            <div class="f"><label class="lbl">Fecha Instalación</label><input id="o-inst" type="date" onchange="calcRecol()"/></div>
+            <div class="f"><label class="lbl">Fecha Recolección (12 días)</label><input id="o-recol" type="date" readonly style="background:var(--bg);color:var(--gold)"/></div>
+          </div>
+        </div>
+        <div id="blq-sala" style="display:none">
+          <div class="f"><label class="lbl">Sala Preferente</label>
+            <select id="o-sala" onchange="salaCosto()">
+              <option value="" data-c="0">-- SELECCIONE --</option>
+              <option value="DEMO" data-c="2500">SALA DEMO - $2,500</option>
+              <option value="GALAMA" data-c="3000">SALA GALAMA - $3,000</option>
+              <option value="JUQUILA" data-c="3000">SALA JUQUILA - $3,000</option>
+              <option value="BOSQUES" data-c="11000">SALA BOSQUES DEL RECUERDO - $11,000</option>
+              <option value="OTRAS" data-c="0">OTRAS SALAS</option>
+            </select>
+          </div>
+          <div class="f"><label class="lbl">Costo de Sala ($)</label><input id="o-sala-costo" type="number" min="0" oninput="calcTotal()"/></div>
+        </div>
+        <div class="div"></div>
+        <div class="g2">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text);text-transform:none;letter-spacing:0"><input type="checkbox" id="ins-cruz"/>Cruz de Madera</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text);text-transform:none;letter-spacing:0"><input type="checkbox" id="ins-cirios"/>Cirios</label>
+        </div>
+      </div>
+
+      <!-- LOGÍSTICA Y TRASLADO -->
+      <div class="card">
+        <div class="st">Logística de Sepelio / Cremación y Traslado</div>
+        <p style="font-size:11px;color:var(--text2);margin-top:-6px;margin-bottom:10px">Los horarios y fechas de esta sección son opcionales al guardar — normalmente se conocen varias horas después, una vez resueltos los trámites. Puedes editarlos en cualquier momento desde el Tablero.</p>
+
+        <div id="blq-log-inhum-local" style="display:none">
+          <div class="f"><label class="lbl">Panteón / Lugar de Sepelio</label><input id="o-panteon" type="text"/></div>
+          <div class="f"><label class="lbl">Fecha de Inhumación</label><input id="o-fecha-sepelio" type="date"/></div>
+          <div class="g2">
+            <div class="f"><label class="lbl">Hora Salida del Domicilio</label><input id="o-salida" type="time"/></div>
+            <div class="f"><label class="lbl">Hora de Misa</label><input id="o-misa" type="time"/></div>
+          </div>
+          <div class="f"><label class="lbl">Hora de Sepelio</label><input id="o-sepelio" type="time"/></div>
+        </div>
+
+        <div id="blq-log-crem" style="display:none">
+          <div class="f"><label class="lbl">Crematorio</label><input id="o-crematorio" type="text"/></div>
+          <div class="f"><label class="lbl">Fecha de Cremación</label><input id="o-fecha-crem" type="date"/></div>
+          <div class="g2">
+            <div class="f"><label class="lbl">Hora Salida de Velación</label><input id="o-salida-crem" type="time"/></div>
+            <div class="f"><label class="lbl">Hora de Misa</label><input id="o-misa-crem" type="time"/></div>
+          </div>
+          <div class="f"><label class="lbl">Hora de Cremación</label><input id="o-hora-crem" type="time"/></div>
+        </div>
+
+        <div class="div"></div>
+        <div class="st" style="margin-bottom:10px;padding-bottom:5px">Traslado</div>
+        <div class="f"><label class="lbl">Tipo de Destino</label>
+          <select id="o-dest-tipo" onchange="toggleDest()">
+            <option value="LOCAL">Local (Ciudad Demo y alrededores)</option>
+            <option value="FORANEO">Foráneo (fuera de Ciudad Demo)</option>
+          </select>
+        </div>
+        <div id="blq-foraneo" style="display:none">
+          <div class="f"><label class="lbl">Municipio / Estado Destino</label><input id="o-dest-nom" type="text"/></div>
+          <div class="g2">
+            <div class="f">
+              <label class="lbl">Kilómetros desde funeraria</label>
+              <input id="o-km" type="number" min="0" inputmode="numeric" placeholder="km" oninput="calcKm()" onchange="calcKm()" onkeyup="calcKm()"/>
+            </div>
+            <div class="f">
+              <label class="lbl">Costo de Traslado ($)</label>
+              <input id="o-costo-traslado" type="number" min="0" readonly style="background:var(--bg);color:var(--gold2)"/>
+            </div>
+          </div>
+          <div class="km-info" id="km-info" style="display:none"></div>
+          <div class="f"><label class="lbl">Lugar de Salida</label>
+            <select id="o-foraneo-salida-lugar">
+              <option value="DOMICILIO">Domicilio (donde se está velando)</option>
+              <option value="FUNERARIA">Funeraria</option>
+            </select>
+          </div>
+          <div class="f"><label class="lbl">Hora de Salida hacia Destino</label><input id="o-foraneo-hora-salida" type="time"/></div>
+        </div>
+
+        <div class="f"><label class="lbl">Otros Cargos / Extras ($)</label><input id="o-otros" type="number" min="0" value="0" oninput="calcTotal()"/></div>
+      </div>
+
+      <!-- FINANCIERO -->
+      <div class="card" style="border-color:var(--golddim)">
+        <div class="st">Desglose Financiero</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Subtotal</span><span id="fin-sub">$0</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="color:var(--text2)">Descuento ($)</span>
+            <input type="number" id="o-desc" style="width:110px;text-align:right" min="0" value="0" oninput="calcTotal()"/>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="o-aplica-iva" checked onchange="calcTotal()"/>
+            <span style="color:var(--text2)">Aplicar I.V.A. (16%)</span>
+          </label>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">I.V.A.</span><span id="fin-iva">$0</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:19px;font-weight:800;color:var(--gold);border-top:1px solid var(--border);padding-top:8px">
+            <span>TOTAL</span><span id="fin-total">$0</span>
+          </div>
+        </div>
+
+        <!-- ANTICIPO REAL: monto que el contratante pagó al momento de contratar.
+             Siempre se captura manualmente, sea de contado o en parcialidades. -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+          <span style="color:var(--text2)">Anticipo Recibido ($)</span>
+          <input type="number" id="o-anticipo" style="width:110px;text-align:right;color:var(--gold2);font-weight:700" min="0" value="0" oninput="calcTotal()"/>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--red);margin-top:4px">
+          <span>Restante (Total − Anticipo)</span><span id="fin-rest">$0</span>
+        </div>
+
+        <!-- PAGO PARCIAL / PAGARÉ -->
+        <div class="div"></div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer">
+          <input type="checkbox" id="o-pagare" onchange="togglePagare()"/>
+          Establecer Pago en Parcialidades / Pagaré
+        </label>
+
+        <!-- % informativo: solo referencia de cuánto se esperaba de anticipo en parcialidades.
+             NO afecta el cálculo del restante; ese siempre usa el anticipo real capturado arriba. -->
+        <div id="blq-anticipo-pct" style="display:none;margin-top:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="color:var(--text2)">% Anticipo pactado (informativo)</span>
+            <div style="display:flex;align-items:center;gap:4px">
+              <input type="number" id="o-pct-ant" style="width:62px;text-align:right" min="0" max="100" value="60" oninput="calcTotal()"/>
+              <span style="color:var(--text2)">%</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px" id="pct-ant-info"></div>
+        </div>
+
+        <div id="blq-pagare" style="display:none">
+          <div class="pagare-box">
+            <div class="st" style="color:var(--amber)">Condiciones del Pagaré</div>
+            <p style="font-size:11px;color:var(--text2);margin-bottom:8px">Los datos del deudor se autocompletan con el contratante; puedes editarlos si la persona que firma el pagaré es distinta.</p>
+            <div class="f"><label class="lbl">Monto Financiado / Deuda ($) *</label>
+              <input id="pg-monto" type="number" min="0" oninput="pg_letras()" readonly style="background:var(--bg)"/></div>
+            <div class="f"><label class="lbl">Cantidad en Letras</label>
+              <input id="pg-letras" type="text" readonly style="background:var(--bg);font-size:12px;color:var(--gold2)"/></div>
+            <div class="g2">
+              <div class="f"><label class="lbl">Vencimiento (12 días auto)</label>
+                <input id="pg-venc" type="date" style="color:var(--gold2)"/></div>
+              <div class="f"><label class="lbl">Tel. Deudor</label>
+                <input id="pg-tel" type="tel"/></div>
+            </div>
+            <div class="f"><label class="lbl">Nombre Deudor *</label><input id="pg-nombre" type="text"/></div>
+            <div class="f"><label class="lbl">INE / RFC del Deudor *</label><input id="pg-ine" type="text"/></div>
+            <div class="f"><label class="lbl">Domicilio Completo del Deudor</label><input id="pg-dom" type="text"/></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTRATO DE ADHESIÓN Y FIRMA -->
+      <div class="card" style="border-color:var(--golddim)">
+        <div class="st">Contrato de Adhesión y Firma del Contratante</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Guarda la orden primero para generar el folio; luego revisa el contrato y solicita la firma en pantalla.</p>
+        <button class="bo" style="width:100%;margin-bottom:10px" onclick="verExpediente()">📄 Ver / Imprimir Expediente (Hoja, Contrato y Pagaré)</button>
+        <div class="f">
+          <label class="lbl">Firma del Contratante (dibuje con el dedo o stylus)</label>
+          <div id="firma-wrap" style="background:#fff;border:1px solid var(--border2);border-radius:var(--rsm);overflow:hidden;touch-action:none">
+            <canvas id="firma-canvas" style="width:100%;height:160px;display:block;touch-action:none"></canvas>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="bo bsm" style="flex:1" onclick="limpiarFirma()">🗑 Limpiar</button>
+            <button class="bg bsm" style="flex:1" onclick="guardarFirmaLocal()">✅ Confirmar Firma</button>
+          </div>
+          <div id="firma-estado" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center">Sin firmar</div>
+        </div>
+      </div>
+
+      <!-- ANOTACIONES -->
+      <div class="card">
+        <div class="st">Anotaciones / Logística Interna</div>
+        <textarea id="o-anot" rows="3" placeholder="Observaciones, instrucciones especiales…"></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;padding-bottom:24px">
+        <button class="bo" style="flex:1" onclick="limpiarODS()">Cancelar</button>
+        <button class="bg" style="flex:2" onclick="guardarODS()">💾 Guardar Orden</button>
+      </div>
+    </div><!-- /nueva -->
+
+    <!-- ── TABLERO ── -->
+    <div class="page" id="page-tablero">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px">
+        <div class="st" style="margin:0;border:none;padding:0">Tablero Logístico</div>
+        <button class="bg bsm" onclick="cargarODS()">↻ Actualizar</button>
+      </div>
+      <input type="search" id="q-ods" placeholder="Buscar folio, fallecido, contratante…" style="margin-bottom:11px" oninput="renderODS()"/>
+      <div class="tabs">
+        <button class="tab act" onclick="setTabODS('TODAS',this)">Todas</button>
+        <button class="tab" onclick="setTabODS('ACTIVA',this)">Activas</button>
+        <button class="tab" onclick="setTabODS('CERRADA',this)">Cerradas</button>
+      </div>
+      <div id="lista-ods"><div style="color:var(--text3);font-size:13px;text-align:center;padding:30px 0">Toca Actualizar para cargar.</div></div>
+    </div>
+
+    <!-- ── EQUIPOS ── -->
+    <div class="page" id="page-equipos">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px">
+        <div class="st" style="margin:0;border:none;padding:0">Control de Equipos</div>
+        <button class="bg bsm" onclick="cargarEquipos()">↻ Actualizar</button>
+      </div>
+      <div class="sg"><div class="sc"><div class="v" id="eq-v" style="color:var(--red)">0</div><div class="l">Vencidos</div></div><div class="sc"><div class="v" id="eq-u" style="color:var(--amber)">0</div><div class="l">≤2 días</div></div><div class="sc"><div class="v" id="eq-p">0</div><div class="l">≤5 días</div></div><div class="sc"><div class="v" id="eq-ok" style="color:var(--green)">0</div><div class="l">En tiempo</div></div></div>
+      <div id="lista-eq"><div style="color:var(--text3);font-size:13px;text-align:center;padding:30px 0">Toca Actualizar para cargar.</div></div>
+    </div>
+
+    <!-- ── PAGOS ── -->
+    <div class="page" id="page-pagos">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px">
+        <div class="st" style="margin:0;border:none;padding:0">Pagos Pendientes</div>
+        <button class="bg bsm" onclick="cargarPagos()">↻ Actualizar</button>
+      </div>
+      <div class="card" style="border-color:var(--golddim);text-align:center;padding:18px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Total por Cobrar</div>
+        <div style="font-size:30px;font-weight:800;color:var(--gold)" id="total-pend">$0</div>
+      </div>
+      <div id="resumen-abonos-pend" style="display:none;margin-bottom:13px"></div>
+      <div id="lista-pg"><div style="color:var(--text3);font-size:13px;text-align:center;padding:30px 0">Toca Actualizar para cargar.</div></div>
+    </div>
+
+    <!-- ── COLABORADORES ── -->
+    <div class="page" id="page-colab">
+      <div class="st">Colaboradores / Usuarios</div>
+      <div class="card">
+        <div class="st">Dar de Alta Colaborador</div>
+        <div class="g2">
+          <div class="f"><label class="lbl">Código ID *</label><input id="c-id" type="text"/></div>
+          <div class="f"><label class="lbl">Fecha de Ingreso</label><input id="c-fecha" type="date"/></div>
+        </div>
+        <div class="f"><label class="lbl">Nombre Completo *</label><input id="c-nom" type="text"/></div>
+        <div class="f"><label class="lbl">Puesto *</label>
+          <select id="c-puesto">
+            <option value="VENDEDOR">VENDEDOR / ATENCIÓN</option>
+            <option value="CHOFER">CHOFER / LOGÍSTICA</option>
+            <option value="ADMINISTRADOR">ADMINISTRADOR GENERAL</option>
+          </select>
+        </div>
+        <div class="g2">
+          <div class="f"><label class="lbl">Teléfono *</label><input id="c-tel" type="tel"/></div>
+          <div class="f"><label class="lbl">PIN (4 dígitos) *</label><input id="c-pin" type="password" maxlength="4" pattern="[0-9]*" inputmode="numeric"/></div>
+        </div>
+        <div class="g2">
+          <div class="f"><label class="lbl">Usuario (para login)</label><input id="c-user" type="text" autocomplete="off"/></div>
+          <div class="f"><label class="lbl">Contraseña</label><input id="c-pass" type="password" autocomplete="off"/></div>
+        </div>
+        <div class="g2">
+          <div class="f"><label class="lbl">Familiar Responsable</label><input id="c-fam" type="text"/></div>
+          <div class="f"><label class="lbl">Tel. Familiar</label><input id="c-fam-tel" type="tel"/></div>
+        </div>
+        <div class="f"><label class="lbl">Domicilio</label><input id="c-dom" type="text"/></div>
+        <button class="bg" style="width:100%" onclick="registrarColab()">✅ Registrar Colaborador</button>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center">El PIN y usuario/contraseña funcionan en AMBAS aplicaciones Demo.</div>
+      </div>
+      <div class="card"><div class="st">Plantilla Operativa</div><div id="lista-colab" style="color:var(--text3);font-size:13px">Cargando…</div></div>
+    </div>
+
+    <!-- ── NUBE ── -->
+    <div class="page" id="page-nube">
+      <div class="st">Sincronización en la Nube</div>
+      <div class="card">
+        <div class="st">Enlace de Google Apps Script</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Pega el enlace de tu implementación web de <strong>Code.gs</strong>. Este mismo enlace funciona para la app de Previsiones — los usuarios y datos están compartidos.</p>
+        <div class="f"><label class="lbl">URL de Apps Script</label>
+          <input id="sc-url" type="url" placeholder="https://script.google.com/macros/s/…/exec"/>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="bg" style="flex:1" onclick="guardarUrl()">💾 Guardar Enlace</button>
+          <button class="bo" onclick="probarConexion()">🔗 Probar</button>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--text3)">Última sincronía: <span id="lbl-sync">Nunca.</span></div>
+      </div>
+      <div class="card">
+        <button class="bgr" style="width:100%;padding:12px;font-size:14px" onclick="sincronizarTodo()">☁️ Sincronizar Todo con la Nube</button>
+        <div style="margin-top:8px;font-size:12px;color:var(--text3)" id="sync-log"></div>
+      </div>
+      <div class="card">
+        <div class="st">Cómo implementar el Code.gs</div>
+        <ol style="color:var(--text2);font-size:13px;line-height:2.1;padding-left:18px">
+          <li>Ve a <a href="https://script.google.com" target="_blank">script.google.com</a> → Nuevo proyecto</li>
+          <li>Borra todo y pega el archivo <strong>Code.gs</strong> descargado</li>
+          <li><strong>Implementar → Nueva implementación → App web</strong></li>
+          <li>Ejecutar como: <em>Yo</em> · Acceso: <em>Cualquier persona, incluso anónima</em></li>
+          <li>Copia el enlace y pégalo arriba</li>
+          <li>Usa el <strong>mismo enlace</strong> en la app de Previsiones</li>
+        </ol>
+        <button class="bo" style="width:100%;margin-top:12px" onclick="copiarInstrucciones()">📋 Copiar ruta del archivo Code.gs</button>
+      </div>
+      <div class="card" style="border-color:var(--red)">
+        <div class="st" style="color:var(--red)">Zona de Peligro</div>
+        <button class="br" style="width:100%" onclick="resetLocal()">🗑 Borrar datos locales de este dispositivo</button>
+        <div style="font-size:11px;color:var(--text3);margin-top:7px">No afecta Google Sheets ni otros dispositivos.</div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL BIENVENIDA PERSONALIZADA -->
+<div class="mo" id="mo-bienvenida" style="pointer-events:none">
+  <div class="mb" style="text-align:center;max-width:340px;background:linear-gradient(160deg,var(--bg2),var(--bg))">
+    <div style="font-size:13px;color:var(--text2);letter-spacing:.05em;margin-bottom:6px">¡BIENVENIDO/A!</div>
+    <div id="bienvenida-nombre" style="font-size:30px;font-weight:800;color:var(--gold);line-height:1.15;margin-bottom:8px"></div>
+    <div id="bienvenida-puesto" style="font-size:13px;color:var(--text3);letter-spacing:.04em"></div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE ODS -->
+<div class="mo" id="mo-ods">
+  <div class="mb">
+    <button class="mc" onclick="closeMo('mo-ods')">✕</button>
+    <div class="mt2" id="mo-ods-title">Detalle ODS</div>
+    <div id="mo-ods-body"></div>
+  </div>
+</div>
+
+<!-- MODAL CONTRATO -->
+<div class="mo" id="mo-contrato">
+  <div class="mb" style="max-width:820px">
+    <button class="mc" onclick="closeMo('mo-contrato')">✕</button>
+    <div class="mt2">Expediente — Hoja de Servicio, Contrato y Pagaré</div>
+    <p style="font-size:11px;color:var(--text2);margin:-6px 0 10px">Vista previa a escala. El pagaré solo aparece si la orden tiene pago en parcialidades.</p>
+    <div id="mo-contrato-body" style="background:#ccc;border-radius:8px;overflow:auto;max-height:60vh;padding:14px;display:flex;flex-direction:column;gap:14px;align-items:center"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="bo" style="flex:1" onclick="closeMo('mo-contrato')">Cerrar</button>
+      <button class="bg" style="flex:1" onclick="imprimirExpediente()">🖨 Imprimir</button>
+      <button class="bg" style="flex:1" onclick="enviarODSPorWhatsapp(document.getElementById('mo-contrato').dataset.folio)">📤 WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL POST-GUARDADO: ver expediente o enviar por WhatsApp -->
+<div class="mo" id="mo-post-guardado">
+  <div class="mb" style="text-align:center">
+    <button class="mc" onclick="closeMo('mo-post-guardado')">✕</button>
+    <div style="font-size:40px;margin-bottom:6px">✅</div>
+    <div class="mt2" id="post-guardado-folio">Orden guardada</div>
+    <p style="font-size:12px;color:var(--text2);margin-top:-4px;margin-bottom:14px">¿Qué deseas hacer ahora?</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="bg" onclick="closeMo('mo-post-guardado');verExpedienteDeFolio(window._folioPostGuardado)">📄 Ver / Imprimir Expediente</button>
+      <button class="bo" onclick="closeMo('mo-post-guardado');enviarODSPorWhatsapp(window._folioPostGuardado)">📤 Enviar ODS por WhatsApp</button>
+      <button class="bo" style="opacity:.7" onclick="closeMo('mo-post-guardado')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ACTUALIZAR LOGÍSTICA (horarios/lugar capturados después) -->
+<div class="mo" id="mo-logistica">
+  <div class="mb">
+    <button class="mc" onclick="closeMo('mo-logistica')">✕</button>
+    <div class="mt2">Actualizar Logística</div>
+    <p style="font-size:11px;color:var(--text2);margin-top:-6px;margin-bottom:10px">Folio <b id="log-folio-disp"></b>. Estos datos se comparten con todo el equipo en cuanto se guardan.</p>
+    <div id="log-blq-inhum-local" style="display:none">
+      <div class="f"><label class="lbl">Panteón / Lugar de Sepelio</label><input id="log-panteon" type="text"/></div>
+      <div class="f"><label class="lbl">Fecha de Inhumación</label><input id="log-fecha-sepelio" type="date"/></div>
+      <div class="g2">
+        <div class="f"><label class="lbl">Hora Salida del Domicilio</label><input id="log-salida" type="time"/></div>
+        <div class="f"><label class="lbl">Hora de Misa</label><input id="log-misa" type="time"/></div>
+      </div>
+      <div class="f"><label class="lbl">Hora de Sepelio</label><input id="log-sepelio" type="time"/></div>
+    </div>
+    <div id="log-blq-crem" style="display:none">
+      <div class="f"><label class="lbl">Crematorio</label><input id="log-crematorio" type="text"/></div>
+      <div class="f"><label class="lbl">Fecha de Cremación</label><input id="log-fecha-crem" type="date"/></div>
+      <div class="g2">
+        <div class="f"><label class="lbl">Hora Salida de Velación</label><input id="log-salida-crem" type="time"/></div>
+        <div class="f"><label class="lbl">Hora de Misa</label><input id="log-misa-crem" type="time"/></div>
+      </div>
+      <div class="f"><label class="lbl">Hora de Cremación</label><input id="log-hora-crem" type="time"/></div>
+    </div>
+    <div id="log-blq-foraneo" style="display:none">
+      <div class="f"><label class="lbl">Lugar de Salida</label>
+        <select id="log-foraneo-salida-lugar">
+          <option value="DOMICILIO">Domicilio (donde se está velando)</option>
+          <option value="FUNERARIA">Funeraria</option>
+        </select>
+      </div>
+      <div class="f"><label class="lbl">Hora de Salida hacia Destino</label><input id="log-foraneo-hora-salida" type="time"/></div>
+    </div>
+    <button class="bg" style="width:100%" onclick="guardarLogistica()">💾 Guardar Logística</button>
+  </div>
+</div>
+
+<!-- MODAL REGISTRAR ABONO -->
+<div class="mo" id="mo-abono">
+  <div class="mb">
+    <button class="mc" onclick="closeMo('mo-abono')">✕</button>
+    <div class="mt2">Registrar Pago Parcial (Abono)</div>
+    <div class="f"><label class="lbl">Folio</label><input id="ab-folio" type="text" readonly style="background:var(--bg)"/></div>
+    <div class="f"><label class="lbl">Contratante</label><input id="ab-contratante" type="text" readonly style="background:var(--bg)"/></div>
+    <div class="g2">
+      <div class="f"><label class="lbl">Monto Abonado ($) *</label><input id="ab-monto" type="number" min="0" oninput="ab_actualizarPct()"/></div>
+      <div class="f"><label class="lbl">% del Total</label><input id="ab-pct" type="number" min="0" max="100" readonly style="background:var(--bg)"/></div>
+    </div>
+    <div class="g2">
+      <div class="f"><label class="lbl">Fecha</label><input id="ab-fecha" type="date"/></div>
+      <div class="f"><label class="lbl">Método</label>
+        <select id="ab-metodo">
+          <option value="EFECTIVO">EFECTIVO</option>
+          <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+          <option value="TARJETA">TARJETA</option>
+          <option value="DEPOSITO">DEPÓSITO</option>
+        </select>
+      </div>
+    </div>
+    <div class="f"><label class="lbl">Referencia (opcional)</label><input id="ab-ref" type="text"/></div>
+    <div class="f"><label class="lbl">Nota (opcional)</label><input id="ab-nota" type="text"/></div>
+    <button class="bg" style="width:100%" onclick="confirmarAbono()">💾 Registrar Abono</button>
+  </div>
+</div>
+
+<div id="print-area" style="position:absolute;left:-9999px;top:0;width:8.5in"></div>
+
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const DB='huerta_ods_v2', EK='huerta_emp_v2', UK='huerta_url', SK='huerta_sync', QK='huerta_q_v2', ABK='huerta_abonos_v2';
+const FUNERARIA_ADDR = "Av. Demostración 100, Col. Ejemplo, C.P. 00000, Ciudad Demo";
+const TIENDA_VIRTUAL_VISUAL_URL = "about:blank"; // 👈 reemplaza con la URL visual de tu tienda demo, si tienes una
+const KM_RATE1=24, KM_RATE2=29, KM_BREAK=200; // hasta 200km: $24/km; >200km: $29/km
+// Sello oficial de la funeraria en base64 (data:image/png;base64,...). Se deja vacío
+// hasta tener la imagen real; mientras tanto se muestra un placeholder en los documentos.
+const SELLO_HUERTA_B64=""; // vacío en demo: se usa el placeholder de texto "SELLO OFICIAL"
+// Tienda virtual (inventario compartido): URL del Apps Script desplegado de la tienda.
+const TIENDA_URL="https://script.google.com/macros/s/AKfycbywZRq1VVMZ6VuUbHhlRxNDQz_0xYPH56IPbQHEfP0UOJ_5q0rUqRskcsGSsxIrHyExZw/exec";
+let _catalogoTienda=[]; // caché del catálogo cargado (productos segment="inmediato")
+
+let ST={user:null,online:navigator.onLine,url:localStorage.getItem(UK)||'https://script.google.com/macros/s/AKfycbwdVni9UASSc5gIRk3VPpvk0Zx8vhAWEhso1CjEklx7Vi7GIE1QUp6HRt5ircTEs_1oxQ/exec',page:'dash',ods:[],emps:[],q:JSON.parse(localStorage.getItem(QK)||'[]'),pin:'',loginTab:'pin'};
+let _firmaPendiente=null;
+
+const $=id=>document.getElementById(id);
+const fmt=n=>'$'+(+n||0).toLocaleString('es-MX',{minimumFractionDigits:0});
+const hoy=()=>new Date().toISOString().split('T')[0];
+// Normaliza cualquier fecha que llegue como ISO completo (ej. "2026-06-26T06:00:00.000Z",
+// como a veces entrega Google Sheets) a solo "YYYY-MM-DD" para mostrarla en pantalla.
+// Si ya viene como fecha simple, o está vacía, la deja igual.
+const fechaPlano=v=>{
+  if(!v)return v;
+  const s=String(v);
+  const m=s.match(/^(\d{4}-\d{2}-\d{2})/);
+  return m?m[1]:s;
+};
+function toast(m,d=2800){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)}
+function lDB(){return JSON.parse(localStorage.getItem(DB)||'[]')}
+function sDB(d){localStorage.setItem(DB,JSON.stringify(d));ST.ods=d}
+function lEmp(){return JSON.parse(localStorage.getItem(EK)||'[]')}
+function sEmp(d){localStorage.setItem(EK,JSON.stringify(d));ST.emps=d}
+function genFolio(){const a=lDB();const n=(a.length+1).toString().padStart(4,'0');const y=new Date().getFullYear().toString().slice(-2);return`ODS-${y}-${n}`}
+
+/* ── CONEXIÓN ── */
+function setOnline(v){
+  ST.online=v;
+  const d=$('sdot'),t=$('stext'),b=$('offbar');
+  if(v){d.className='';d.style.background='var(--green)';t.textContent='EN LÍNEA';b.style.display='none'}
+  else{d.className='off';t.textContent='SIN CONEXIÓN';b.style.display='block'}
+  $('offline-login-note').textContent=v?'':'Sin internet — puedes iniciar sesión igual';
+}
+window.addEventListener('online',()=>{setOnline(true);if(ST.q.length)sincronizarTodo(true)});
+window.addEventListener('offline',()=>setOnline(false));
+
+/* ── API ── */
+async function api(body){
+  if(!ST.url) throw new Error('URL no configurada');
+  const r=await fetch(ST.url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+  return r.json();
+}
+
+/* ── LOGIN ── */
+function switchLoginTab(t,btn){
+  ST.loginTab=t;
+  document.querySelectorAll('.l-tab').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  $('pin-panel').style.display=t==='pin'?'flex':'none';
+  const up=$('up-panel');
+  up.style.display=t==='up'?'flex':'none';
+  up.className='up-panel'+(t==='up'?' show':'');
+}
+function pinP(n){if(ST.pin.length>=4)return;ST.pin+=n;updDots();if(ST.pin.length===4)setTimeout(doLogin,180)}
+function pinDel(){ST.pin=ST.pin.slice(0,-1);updDots()}
+function updDots(){for(let i=0;i<4;i++)$(`pd${i}`).classList.toggle('on',i<ST.pin.length)}
+
+async function doLogin(){
+  const pin=ST.pin,user=($('l-user')||{value:''}).value.trim(),pass=($('l-pass')||{value:''}).value;
+  if(!pin&&!user){toast('Ingresa PIN o usuario');return}
+  $('l-status').textContent='Validando…';
+
+  // Local first
+  const emps=lEmp();
+  const local=emps.find(e=>{
+    if(String(e.estatus)!=='ACTIVO') return false;
+    if(pin&&String(e.pin)===String(pin)) return true;
+    if(user&&pass&&String(e.usuario)===user&&String(e.contrasena)===pass) return true;
+    return false;
+  });
+  if(local){startSession(local);return}
+
+  // PIN master de emergencia (sin nube)
+  if(pin==='0000'){startSession({idColaborador:'ADMIN',nombreCompleto:'Administrador',puesto:'ADMINISTRADOR GENERAL'});return}
+
+  // Nube
+  if(ST.url&&ST.online){
+    try{
+      const payload=pin?{accion:'validarAcceso',pin}:{accion:'validarAcceso',usuario:user,contrasena:pass};
+      const r=await api(payload);
+      if(r.ok){startSession(r.colaborador);return}
+    }catch(e){}
+  }
+
+  $('l-status').textContent='Credenciales incorrectas.';
+  ST.pin='';updDots();
+  setTimeout(()=>$('l-status').textContent='',2500);
+}
+
+function startSession(col){
+  ST.user=col;
+  $('login').style.display='none';
+  $('app').style.display='flex';
+  $('user-rol').textContent=col.puesto||'OPERATIVO';
+  $('est-user').textContent=col.nombreCompleto||col.nombre||col.id||'—';
+  $('l-status').textContent='';ST.pin='';updDots();
+  _folioActual=genFolio();
+  $('folio-disp').textContent=_folioActual;
+  aplicarPermisosUI();
+  mostrarBienvenida();
+  updDash();
+}
+function logout(){if(!confirm('¿Cerrar sesión?'))return;ST.user=null;$('login').style.display='flex';$('app').style.display='none';ST.pin='';updDots()}
+
+/* ── PERMISOS POR ROL ──
+   ADMINISTRADOR: acceso total.
+   VENDEDOR / CHOFER (empleados): pueden crear ODS y registrar abonos (quedan
+   pendientes de confirmar), y consultar tablero/equipos/pagos. No pueden cerrar
+   ni eliminar órdenes, ni confirmar abonos, ni entrar a Colaboradores o Nube. */
+function esAdmin(){
+  return !!(ST.user && String(ST.user.puesto||'').toUpperCase().includes('ADMINISTRADOR'));
+}
+function requiereAdmin(mensaje){
+  if(esAdmin())return true;
+  toast(mensaje||'⚠ Esta acción requiere permisos de Administrador');
+  return false;
+}
+function aplicarPermisosUI(){
+  const admin=esAdmin();
+  // Botones del menú lateral exclusivos de Administrador
+  document.querySelectorAll('[data-admin-only]').forEach(el=>{
+    el.style.display=admin?'':'none';
+  });
+}
+
+function mostrarBienvenida(){
+  const nombre=(ST.user&&(ST.user.nombreCompleto||ST.user.nombre))||'Usuario';
+  const puesto=(ST.user&&ST.user.puesto)||'';
+  $('bienvenida-nombre').textContent=nombre;
+  $('bienvenida-puesto').textContent=puesto;
+  $('mo-bienvenida').classList.add('show');
+  setTimeout(()=>{ $('mo-bienvenida').classList.remove('show'); }, 2200);
+}
+
+/* ── NAV ── */
+function navTo(p){
+  if((p==='colab'||p==='nube') && !requiereAdmin('⚠ Solo el Administrador puede acceder a esta sección')) return;
+  ST.page=p;
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('act'));
+  document.querySelectorAll('.ni').forEach(el=>el.classList.remove('act'));
+  const pg=$(`page-${p}`);if(pg)pg.classList.add('act');
+  document.querySelectorAll('.ni').forEach(el=>{
+    const oc=el.getAttribute('onclick')||'';
+    if(oc.includes(`'${p}'`))el.classList.add('act');
+  });
+  closeSB();$('main').scrollTop=0;
+  if(p==='tablero')cargarODS();
+  if(p==='equipos')cargarEquipos();
+  if(p==='pagos')cargarPagos();
+  if(p==='colab')renderColab();
+  if(p==='nube')initNube();
+  if(p==='nueva'){setTimeout(initFirmaCanvas,80);cargarCatalogoTienda();toggleLogistica();}
+}
+function toggleSB(){$('sb').classList.toggle('open');$('sov').classList.toggle('show')}
+function closeSB(){$('sb').classList.remove('open');$('sov').classList.remove('show')}
+
+/* ── DASHBOARD ── */
+function updDash(){
+  const ods=lDB();ST.ods=ods;
+  const activas=ods.filter(o=>o.estatus==='ACTIVA');
+  const equipos=ods.filter(o=>o.modalidadVelacion==='DOMICILIO'&&o.estatusEquipo==='ACTIVO');
+  const porCobrar=ods.reduce((s,o)=>s+(+o.restante||0),0);
+  $('st-tot').textContent=ods.length;
+  $('st-act').textContent=activas.length;
+  $('st-eq').textContent=equipos.length;
+  $('st-pend').textContent=fmt(porCobrar);
+  $('bdg-eq').textContent=equipos.length;
+  $('bdg-pg').textContent=ods.filter(o=>+o.restante>0).length;
+
+  const hoyD=new Date();hoyD.setHours(0,0,0,0);
+  const alertas=equipos.filter(o=>{
+    if(!o.fechaRecoleccion)return false;
+    const r=new Date(o.fechaRecoleccion);r.setHours(0,0,0,0);
+    return Math.ceil((r-hoyD)/(864e5))<=12;
+  }).sort((a,b)=>new Date(a.fechaRecoleccion)-new Date(b.fechaRecoleccion));
+
+  const ab=$('box-alertas');
+  ab.innerHTML=alertas.length?alertas.map(o=>{
+    const r=new Date(o.fechaRecoleccion);r.setHours(0,0,0,0);
+    const d=Math.ceil((r-hoyD)/(864e5));
+    return`<div class="aeq ${d<0?'venc':''}">
+      <div><div style="font-size:11px;font-weight:700;color:var(--gold)">${o.folio}</div>
+      <div style="font-size:13px">${o.fallecido||'—'}</div>
+      <div style="font-size:11px;color:var(--text3)">${d<0?`Vencido hace ${-d}d`:`Recoger en ${d}d`} · ${fechaPlano(o.fechaRecoleccion)}</div></div></div>`;
+  }).join(''):'<div style="color:var(--text3);font-size:13px">Sin alertas de equipos.</div>';
+
+  const url=localStorage.getItem(UK);const ls=localStorage.getItem(SK);
+  $('est-nube').className='badge '+(url?'bg-g':'bg-gr');
+  $('est-nube').textContent=url?'CONFIGURADA':'Sin configurar';
+  $('est-q').textContent=ST.q.length;
+  $('est-sync').textContent=ls?new Date(ls).toLocaleString('es-MX'):'Nunca';
+
+  const items=[];
+  if(equipos.length)items.push(`📦 Verificar ${equipos.length} equipo(s) en domicilio`);
+  if(ods.filter(o=>+o.restante>0).length)items.push(`💰 Cobrar saldo en ${ods.filter(o=>+o.restante>0).length} orden(es)`);
+  if(!items.length)items.push('✅ Sin tareas urgentes');
+  $('box-tareas').innerHTML=items.map(i=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">${i}</div>`).join('');
+}
+
+/* ── ODS FORM LÓGICA ── */
+let _folioActual='ODS-XXXX';
+function toggleMod(){
+  const v=$('o-modalidad').value;
+  $('blq-ataud').style.display=v==='INHUMACION'?'block':'none';
+  $('blq-cremacion').style.display=v==='CREMACION'?'block':'none';
+  toggleLogistica();
+  calcTotal();
+}
+// Controla qué bloque de logística de horarios/lugar se muestra:
+// - INHUMACIÓN + Local  -> panteón/sepelio local
+// - INHUMACIÓN + Foráneo -> solo el bloque de traslado (la inhumación es en destino)
+// - CREMACIÓN (cualquier destino) -> bloque de crematorio
+function toggleLogistica(){
+  const mod=$('o-modalidad').value;
+  const dest=$('o-dest-tipo').value;
+  $('blq-log-inhum-local').style.display=(mod==='INHUMACION'&&dest==='LOCAL')?'block':'none';
+  $('blq-log-crem').style.display=(mod==='CREMACION')?'block':'none';
+}
+function toggleVel(){
+  const v=$('o-vel-tipo').value;
+  $('blq-dom').style.display=v==='DOMICILIO'?'block':'none';
+  $('blq-sala').style.display=v==='SALA'?'block':'none';
+}
+function calcRecol(){
+  const d=new Date($('o-inst').value);if(isNaN(d))return;
+  d.setDate(d.getDate()+12);
+  $('o-recol').value=d.toISOString().split('T')[0];
+}
+function salaCosto(){
+  const s=$('o-sala');
+  $('o-sala-costo').value=s.options[s.selectedIndex].dataset.c||0;
+  calcTotal();
+}
+function toggleDest(){
+  const v=$('o-dest-tipo').value;
+  $('blq-foraneo').style.display=v==='FORANEO'?'block':'none';
+  toggleLogistica();
+  calcTotal();
+}
+/* ══════════════════════════════════════════════════════════
+   INVENTARIO COMPARTIDO CON LA TIENDA VIRTUAL
+   La tienda guarda cada pieza física (ataúd/urna) como una fila
+   con id único. Esta app:
+   - lee el catálogo filtrado a segment="inmediato" y estado="disponible"
+   - al GUARDAR una orden, marca la pieza elegida como "reservada" (no se borra)
+   - al CERRAR una orden, la elimina definitivamente del inventario
+   - al ELIMINAR una orden (cancelación), libera la pieza de vuelta a disponible
+════════════════════════════════════════════════════════════ */
+async function tiendaApi(body){
+  try{
+    const r=await fetch(TIENDA_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    return await r.json();
+  }catch(err){
+    console.error('Error tienda:',err);
+    return {success:false,error:String(err)};
+  }
+}
+async function tiendaGet(){
+  try{
+    const r=await fetch(TIENDA_URL,{method:'GET'});
+    return await r.json();
+  }catch(err){
+    console.error('Error leyendo catálogo:',err);
+    return [];
+  }
+}
+
+// Normaliza texto: minúsculas, sin espacios extra, sin acentos (para comparar categorías/segment de forma tolerante)
+function _norm(s){
+  return String(s||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+async function cargarCatalogoTienda(){
+  const datos=await tiendaGet();
+  _catalogoTienda=Array.isArray(datos)?datos.filter(p=>_norm(p.segment)==='inmediato'&&_norm(p.estado||'disponible')==='disponible'):[];
+  llenarSelectCatalogo('o-ataud-id','ataud');
+  llenarSelectCatalogo('o-urna-id','urna');
+  llenarSelectCatalogo('o-urna-cambio-id','urna-cambio');
+}
+
+function llenarSelectCatalogo(selectId,categoriaFiltro){
+  const sel=$(selectId);
+  if(!sel)return;
+  // categoriaFiltro: 'ataud' -> categoría real "Inhumacion" | 'urna' -> "Cremacion" (paquete completo) | 'urna-cambio' -> "Urna" (pieza suelta, costo extra)
+  const mapaCategoria={ataud:'inhumacion',urna:'cremacion','urna-cambio':'urna'};
+  const catReal=mapaCategoria[categoriaFiltro]||categoriaFiltro;
+  const items=_catalogoTienda.filter(p=>_norm(p.categoria)===catReal||(catReal!=='urna'&&_norm(p.categoria).includes(catReal)));
+  const valorPrevio=sel.value;
+  const placeholder=categoriaFiltro==='urna-cambio'?'-- Mantener la urna incluida en el paquete --':'-- Selecciona del inventario --';
+  sel.innerHTML=`<option value="">${placeholder}</option>`
+    + items.map(p=>`<option value="${p.id}" data-nombre="${(p.nombre||'').replace(/"/g,'&quot;')}" data-precio="${p.precio||0}">${p.nombre} — ${fmt(p.precio||0)}</option>`).join('');
+  const idsSinStock={ataud:'ataud-sin-stock',urna:'urna-sin-stock','urna-cambio':'urna-cambio-sin-stock'};
+  const sinStock=$(idsSinStock[categoriaFiltro]);
+  if(sinStock) sinStock.style.display=items.length===0?'block':'none';
+  // Restaurar selección previa si la pieza sigue disponible (ej. al editar una orden)
+  if(valorPrevio && items.some(p=>String(p.id)===String(valorPrevio))) sel.value=valorPrevio;
+}
+
+function seleccionarProducto(tipo){
+  const selId=tipo==='ataud'?'o-ataud-id':'o-urna-id';
+  const nomId=tipo==='ataud'?'o-ataud-nom':'o-urna-nom';
+  const costoId=tipo==='ataud'?'o-ataud-costo':'o-urna-costo';
+  const sel=$(selId);
+  const opt=sel.options[sel.selectedIndex];
+  $(nomId).value=opt&&opt.dataset.nombre?opt.dataset.nombre:'';
+  $(costoId).value=opt&&opt.dataset.precio?opt.dataset.precio:0;
+  calcTotal();
+}
+
+// Cambio opcional de la urna incluida en el paquete de cremación: si se elige
+// una urna del catálogo independiente, se cobra su precio COMPLETO como costo
+// extra (no se resta nada de lo que ya incluye el paquete).
+function seleccionarUrnaCambio(){
+  const sel=$('o-urna-cambio-id');
+  const opt=sel.options[sel.selectedIndex];
+  const hayEleccion=!!sel.value;
+  $('blq-urna-cambio-detalle').style.display=hayEleccion?'flex':'none';
+  $('o-urna-cambio-nom').value=hayEleccion&&opt.dataset.nombre?opt.dataset.nombre:'';
+  $('o-urna-cambio-costo').value=hayEleccion&&opt.dataset.precio?opt.dataset.precio:0;
+  calcTotal();
+}
+
+// Reserva en la tienda la pieza elegida (ataúd y/o urna) al guardar una orden
+async function reservarPiezasDeOrden(o){
+  if(o.ataudId) await tiendaApi({action:'reservar',id:o.ataudId});
+  if(o.urnaId) await tiendaApi({action:'reservar',id:o.urnaId});
+  if(o.urnaCambioId) await tiendaApi({action:'reservar',id:o.urnaCambioId});
+}
+// Elimina definitivamente del inventario las piezas de una orden ya cerrada
+async function eliminarPiezasDeOrden(o){
+  if(o.ataudId) await tiendaApi({action:'delete',id:o.ataudId});
+  if(o.urnaId) await tiendaApi({action:'delete',id:o.urnaId});
+  if(o.urnaCambioId) await tiendaApi({action:'delete',id:o.urnaCambioId});
+}
+// Libera de vuelta a disponible las piezas de una orden cancelada/eliminada
+async function liberarPiezasDeOrden(o){
+  if(o.ataudId) await tiendaApi({action:'liberar',id:o.ataudId});
+  if(o.urnaId) await tiendaApi({action:'liberar',id:o.urnaId});
+  if(o.urnaCambioId) await tiendaApi({action:'liberar',id:o.urnaCambioId});
+}
+
+function toggleCandeleros(){
+  $('blq-cande-piezas').style.display=$('eq-cande').checked?'block':'none';
+}
+
+function togglePagare(){
+  const activo=$('o-pagare').checked;
+  $('blq-pagare').style.display=activo?'block':'none';
+  $('blq-anticipo-pct').style.display=activo?'block':'none';
+  if(activo){
+    // Auto-llenar vencimiento a 12 días
+    const d=new Date();d.setDate(d.getDate()+12);
+    $('pg-venc').value=d.toISOString().split('T')[0];
+    // Auto-llenar datos del deudor con los del contratante (editable si la persona que firma es distinta)
+    if(!$('pg-nombre').value) $('pg-nombre').value=($('o-contratante')||{value:''}).value;
+    if(!$('pg-tel').value) $('pg-tel').value=($('o-tel')||{value:''}).value;
+    if(!$('pg-dom').value){
+      const dir=[($('o-calle')||{value:''}).value,($('o-colonia')||{value:''}).value,($('o-localidad')||{value:''}).value,($('o-municipio')||{value:''}).value].filter(Boolean).join(', ');
+      $('pg-dom').value=dir;
+    }
+  }
+  calcTotal();
+}
+
+// Cálculo automático de traslado por km
+function calcKm(){
+  const km=parseFloat($('o-km').value)||0;
+  let costo=0;
+  if(km>0){
+    if(km<=KM_BREAK) costo=km*KM_RATE1;
+    else costo=KM_BREAK*KM_RATE1+(km-KM_BREAK)*KM_RATE2;
+  }
+  $('o-costo-traslado').value=Math.round(costo);
+  const info=$('km-info');
+  if(km>0){
+    const det=km<=KM_BREAK
+      ?`${km} km × $${KM_RATE1}/km`
+      :`${KM_BREAK} km × $${KM_RATE1} + ${km-KM_BREAK} km × $${KM_RATE2}`;
+    info.textContent=`📍 Salida desde ${FUNERARIA_ADDR} | ${det} = ${fmt(costo)}`;
+    info.style.display='block';
+  }else{info.style.display='none'}
+  calcTotal();
+}
+
+function calcTotal(){
+  let sub=0;
+  const mod=$('o-modalidad').value;
+  if(mod==='INHUMACION') sub+=(+($('o-ataud-costo')||{value:0}).value)||0;
+  else sub+=((+($('o-urna-costo')||{value:0}).value)||0)+((+($('o-crem-extra')||{value:0}).value)||0)+((+($('o-urna-cambio-costo')||{value:0}).value)||0);
+
+  const emb=$('o-emb');
+  if(emb) sub+=+(emb.options[emb.selectedIndex].dataset.c||0);
+
+  if($('o-vel-tipo').value==='SALA') sub+=(+($('o-sala-costo')||{value:0}).value)||0;
+
+  if($('o-dest-tipo').value==='FORANEO') sub+=(+($('o-costo-traslado')||{value:0}).value)||0;
+
+  // Trámites con costo opcional (certificación, permiso 48h, permiso de traslado)
+  ['tr-cert','tr-p48','tr-traslado'].forEach(id=>{
+    const sel=$(id);
+    if(sel) sub+=+(sel.options[sel.selectedIndex].dataset.c||0);
+  });
+
+  // Exceso de peso y objetos en el cuerpo: exclusivos de cremación
+  if(mod==='CREMACION'){
+    const exc=$('o-exceso');
+    if(exc) sub+=+(exc.options[exc.selectedIndex].dataset.c||0);
+    const obj=$('o-obj-cuerpo');
+    if(obj) sub+=+(obj.options[obj.selectedIndex].dataset.c||0);
+  }
+
+  sub+=(+($('o-otros')||{value:0}).value)||0;
+
+  const desc=(+($('o-desc')||{value:0}).value)||0;
+  const base=Math.max(sub-desc,0);
+  const aplicaIva=$('o-aplica-iva')?$('o-aplica-iva').checked:true;
+  const iva=aplicaIva?Math.round(base*0.16):0;
+  const total=base+iva;
+
+  // El ANTICIPO es siempre el monto real que el contratante pagó al contratar
+  // (capturado manualmente). El restante = Total − Anticipo real, sin importar
+  // si la orden es de contado o en parcialidades.
+  const ant=(+($('o-anticipo')||{value:0}).value)||0;
+  const rest=Math.max(total-ant,0);
+
+  // El % de anticipo pactado es SOLO informativo cuando hay pago en parcialidades:
+  // muestra cuánto se esperaba recibir según ese % vs cuánto se capturó realmente arriba.
+  const hayPagare=$('o-pagare')&&$('o-pagare').checked;
+  const pctInfo=$('pct-ant-info');
+  if(hayPagare&&pctInfo){
+    const pctEl=$('o-pct-ant');
+    const pct=Math.min(100,Math.max(0,(+pctEl.value)||0));
+    const esperado=Math.round(total*pct/100);
+    pctInfo.textContent=`Referencia: ${pct}% del total equivale a ${fmt(esperado)}. El cálculo real usa el anticipo capturado arriba (${fmt(ant)}).`;
+  }
+
+  $('fin-sub').textContent=fmt(sub);
+  $('fin-iva').textContent=fmt(iva);
+  $('fin-total').textContent=fmt(total);
+  $('fin-rest').textContent=fmt(rest);
+  $('folio-disp').textContent=_folioActual;
+
+  // Si hay pagaré activo, el monto financiado del pagaré siempre es el restante real
+  if(hayPagare){
+    $('pg-monto').value=rest;
+    pg_letras();
+  }
+}
+
+// Número a letras (simplificado para MXN)
+function numLetras(n){
+  n=Math.round(+n||0);
+  if(n===0)return'CERO PESOS 00/100 M.N.';
+  const U=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];
+  const D=['','','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+  const C=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+  function g(x){
+    if(x===0)return'';if(x<20)return U[x];
+    if(x<100){const d=Math.floor(x/10),u=x%10;return D[d]+(u?( d===2?'ITRÉS'===U[u]?'VEINTITRÉS':' Y '+U[u]:'  Y '+U[u]):'')}
+    if(x<1000){const c=Math.floor(x/100),r=x%100;return(x===100?'CIEN':C[c])+(r?' '+g(r):'')}
+    if(x<1000000){const m=Math.floor(x/1000),r=x%1000;return(m===1?'MIL':g(m)+' MIL')+(r?' '+g(r):'')}
+    return x.toString();
+  }
+  return g(n)+' PESOS 00/100 M.N.';
+}
+function pg_letras(){
+  const v=+$('pg-monto').value||0;
+  $('pg-letras').value=numLetras(v);
+}
+
+function recopilar(){
+  const mod=$('o-modalidad').value;
+  const vel=$('o-vel-tipo').value;
+  const exc=$('o-exceso'),emb=$('o-emb'),obj=$('o-obj-cuerpo');
+  const tramites=['tr-registro','tr-fge','tr-periciales'].filter(id=>$(id)&&$(id).checked).map(id=>id.replace('tr-',''))
+    .concat($('tr-cert')&&$('tr-cert').value==='SI'?['cert']:[])
+    .concat($('tr-p48')&&$('tr-p48').value==='SI'?['p48']:[])
+    .concat($('tr-traslado')&&$('tr-traslado').value==='SI'?['traslado']:[])
+    .join(',');
+  const costoTramites=['tr-cert','tr-p48','tr-traslado'].reduce((s,id)=>{
+    const sel=$(id);return s+(sel?+(sel.options[sel.selectedIndex].dataset.c||0):0);
+  },0);
+  const equipo=['eq-biombo','eq-base','eq-cristo'].filter(id=>$(id)&&$(id).checked).map(id=>id.replace('eq-',''))
+    .concat($('eq-cande')&&$('eq-cande').checked?[`cande${($('eq-cande-piezas')||{value:2}).value}`]:[])
+    .join(',');
+  const insumos=['ins-cruz','ins-cirios'].filter(id=>$(id)&&$(id).checked).map(id=>id.replace('ins-','')).join(',');
+  const total=parseFloat(($('fin-total').textContent||'').replace(/[$,]/g,''))||0;
+  const rest=parseFloat(($('fin-rest').textContent||'').replace(/[$,]/g,''))||0;
+  const pagare=$('o-pagare').checked;
+  return{
+    folio:_folioActual,
+    fallecido:($('o-fallecido')||{value:''}).value.trim(),
+    contratante:($('o-contratante')||{value:''}).value.trim(),
+    telefono:($('o-tel')||{value:''}).value.trim(),
+    direccionCalle:($('o-calle')||{value:''}).value,
+    direccionColonia:($('o-colonia')||{value:''}).value,
+    direccionLocalidad:($('o-localidad')||{value:''}).value,
+    direccionMunicipio:($('o-municipio')||{value:''}).value,
+    modalidadServicio:mod,
+    ataudId:($('o-ataud-id')||{value:''}).value,
+    ataudNombre:($('o-ataud-nom')||{value:''}).value,
+    costoAtaud:($('o-ataud-costo')||{value:0}).value,
+    tipoCremacion:($('o-tipo-crem')||{value:''}).value,
+    urnaId:($('o-urna-id')||{value:''}).value,
+    urnaNombre:($('o-urna-nom')||{value:''}).value,
+    costoUrna:($('o-urna-costo')||{value:0}).value,
+    urnaCambioId:($('o-urna-cambio-id')||{value:''}).value,
+    urnaCambioNombre:($('o-urna-cambio-nom')||{value:''}).value,
+    costoUrnaCambio:($('o-urna-cambio-costo')||{value:0}).value,
+    costoAdicionalCremacion:($('o-crem-extra')||{value:0}).value,
+    embalsamado:emb?emb.value:'NINGUNO',
+    costoEmbalsamado:emb?+(emb.options[emb.selectedIndex].dataset.c||0):0,
+    tramites,
+    costoTramites,
+    modalidadVelacion:vel,
+    equipoVelacion:equipo,
+    fechaInstalacion:($('o-inst')||{value:''}).value,
+    fechaRecoleccion:($('o-recol')||{value:''}).value,
+    salaVelacion:($('o-sala')||{value:''}).value,
+    costoSala:($('o-sala-costo')||{value:0}).value,
+    insumos,
+    destinoTipo:($('o-dest-tipo')||{value:'LOCAL'}).value,
+    destinoNombre:($('o-dest-nom')||{value:''}).value,
+    kmTraslado:($('o-km')||{value:0}).value,
+    costoTraslado:($('o-costo-traslado')||{value:0}).value,
+    excesoPeso:(mod==='CREMACION'&&exc)?exc.value:'NINGUNO',
+    costoExcesoPeso:(mod==='CREMACION'&&exc)?+(exc.options[exc.selectedIndex].dataset.c||0):0,
+    objetoCuerpo:(mod==='CREMACION'&&obj)?obj.value:'NINGUNO',
+    costoObjetoCuerpo:(mod==='CREMACION'&&obj)?+(obj.options[obj.selectedIndex].dataset.c||0):0,
+    otrosCargos:($('o-otros')||{value:0}).value,
+    subtotal:parseFloat(($('fin-sub').textContent||'').replace(/[$,]/g,''))||0,
+    descuento:($('o-desc')||{value:0}).value,
+    iva:parseFloat(($('fin-iva').textContent||'').replace(/[$,]/g,''))||0,
+    totalGeneral:total,
+    porcentajeAnticipo:($('o-pct-ant')||{value:60}).value,
+    anticipo:($('o-anticipo')||{value:0}).value,
+    restante:rest,
+    tienePagare:pagare?'SI':'NO',
+    montoPagare:pagare?($('pg-monto')||{value:0}).value:0,
+    nombreDeudor:pagare?($('pg-nombre')||{value:''}).value:'',
+    telefonoDeudor:pagare?($('pg-tel')||{value:''}).value:'',
+    ineDeudor:pagare?($('pg-ine')||{value:''}).value:'',
+    vencimientoPagare:pagare?($('pg-venc')||{value:''}).value:'',
+    domicilioDeudor:pagare?($('pg-dom')||{value:''}).value:'',
+    cantidadLetras:pagare?($('pg-letras')||{value:''}).value:'',
+    // Logística Inhumación Local
+    lugSepelio:($('o-panteon')||{value:''}).value,
+    fechaSepelio:($('o-fecha-sepelio')||{value:''}).value,
+    salidaTraslado:($('o-salida')||{value:''}).value,
+    horaMisa:($('o-misa')||{value:''}).value,
+    horaSepelio:($('o-sepelio')||{value:''}).value,
+    // Logística Cremación
+    crematorio:($('o-crematorio')||{value:''}).value,
+    fechaCremacion:($('o-fecha-crem')||{value:''}).value,
+    salidaCremacion:($('o-salida-crem')||{value:''}).value,
+    horaMisaCrem:($('o-misa-crem')||{value:''}).value,
+    horaCremacion:($('o-hora-crem')||{value:''}).value,
+    // Logística Traslado Foráneo
+    foraneoLugarSalida:($('o-foraneo-salida-lugar')||{value:''}).value,
+    foraneoHoraSalida:($('o-foraneo-hora-salida')||{value:''}).value,
+    anotaciones:($('o-anot')||{value:''}).value,
+    estatusEquipo:vel==='DOMICILIO'?'ACTIVO':'N/A',
+    estatus:'ACTIVA',
+    creadoPor:ST.user?(ST.user.nombreCompleto||ST.user.id||ST.user.idColaborador||''):'',
+    fechaCreacion:new Date().toISOString(),
+    firmaContratanteB64:_firmaPendiente||'',
+    firmaFecha:_firmaPendiente?new Date().toISOString():''
+  };
+}
+
+function guardarODS(){
+  const d=recopilar();
+  if(!d.fallecido||!d.contratante){toast('⚠ Completa fallecido y contratante');return}
+  if(d.modalidadServicio==='INHUMACION'&&!d.ataudId){toast('⚠ Selecciona un ataúd del inventario disponible');return}
+  if(d.modalidadServicio==='CREMACION'&&!d.urnaId){toast('⚠ Selecciona una urna del inventario disponible');return}
+  const db=lDB();db.unshift(d);sDB(db);
+  encolar({accion:'guardarODS',datos:d});
+  reservarPiezasDeOrden(d).then(()=>cargarCatalogoTienda()); // aparta la pieza y refresca el inventario visible
+  toast(`✅ ${d.folio} guardada`);
+  if(ST.online&&ST.url)sincronizarTodo(true);
+  const folioGuardado=d.folio;
+  _firmaPendiente=null;
+  _folioActual=genFolio();
+  limpiarODS();updDash();navTo('tablero');
+  // Ofrecer ver expediente o enviarlo por WhatsApp
+  window._folioPostGuardado=folioGuardado;
+  setTimeout(()=>{
+    $('post-guardado-folio').textContent=`${folioGuardado} guardada`;
+    $('mo-post-guardado').classList.add('show');
+  },350);
+}
+
+function limpiarODS(){
+  ['o-fallecido','o-contratante','o-tel','o-calle','o-colonia','o-localidad','o-municipio',
+   'o-ataud-id','o-ataud-nom','o-ataud-costo','o-urna-id','o-urna-nom','o-urna-costo','o-crem-extra',
+   'o-urna-cambio-id','o-urna-cambio-nom','o-urna-cambio-costo',
+   'o-inst','o-recol','o-sala-costo','o-dest-nom','o-km','o-costo-traslado','o-otros','o-anticipo','o-desc',
+   'o-anot','o-panteon','o-fecha-sepelio','o-salida','o-misa','o-sepelio',
+   'o-crematorio','o-fecha-crem','o-salida-crem','o-misa-crem','o-hora-crem',
+   'o-foraneo-hora-salida',
+   'pg-monto','pg-letras','pg-nombre','pg-tel','pg-ine','pg-venc','pg-dom'
+  ].forEach(id=>{const el=$(id);if(el)el.value=id.includes('otros')||id.includes('anticipo')||id.includes('desc')?'0':''});
+  const pctEl=$('o-pct-ant');if(pctEl)pctEl.value=60;
+  ['tr-registro','tr-fge','tr-periciales','eq-biombo','eq-base','eq-cristo','eq-cande','ins-cruz','ins-cirios','o-pagare'].forEach(id=>{const el=$(id);if(el)el.checked=false});
+  ['o-exceso','o-obj-cuerpo','o-modalidad','o-vel-tipo','o-dest-tipo','o-foraneo-salida-lugar','tr-cert','tr-p48','tr-traslado'].forEach(id=>{const el=$(id);if(el)el.selectedIndex=0});
+  toggleLogistica();
+  const ivaEl=$('o-aplica-iva');if(ivaEl)ivaEl.checked=true;
+  $('blq-cande-piezas').style.display='none';
+  $('blq-urna-cambio-detalle').style.display='none';
+  $('blq-anticipo-pct').style.display='none';
+  $('blq-pagare').style.display='none';
+  $('km-info').style.display='none';
+  toggleMod();toggleDest();
+  limpiarFirma();
+  calcTotal();
+}
+
+/* ── TABLERO ── */
+let _tabODS='TODAS';
+function setTabODS(f,btn){_tabODS=f;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));btn.classList.add('act');renderODS()}
+function cargarODS(){ST.ods=lDB();renderODS()}
+function renderODS(){
+  let ods=ST.ods.length?ST.ods:lDB();
+  const q=($('q-ods')||{value:''}).value.toLowerCase();
+  if(_tabODS!=='TODAS')ods=ods.filter(o=>o.estatus===_tabODS);
+  if(q)ods=ods.filter(o=>(o.folio||'').toLowerCase().includes(q)||(o.fallecido||'').toLowerCase().includes(q)||(o.contratante||'').toLowerCase().includes(q));
+  const b=$('lista-ods');
+  if(!ods.length){b.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px 0">Sin órdenes.</div>';return}
+  b.innerHTML=ods.map(o=>`<div class="oc" onclick="verODS('${o.folio}')">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="fo">${o.folio}</div>
+      <span class="badge ${o.estatus==='ACTIVA'?'bg-g':o.estatus==='CERRADA'?'bg-gr':'bg-r'}">${o.estatus||'—'}</span>
+    </div>
+    <div class="fn">${o.fallecido||'—'}</div>
+    <div class="mt">Contratante: ${o.contratante||'—'} · ${o.telefono||'—'}</div>
+    <div class="fr">
+      <div style="font-size:11px;color:var(--text3)">${o.modalidadServicio||''} · ${o.modalidadVelacion||''}${o.tienePagare==='SI'?' · 📄 Pagaré':''}</div>
+      <div style="font-size:14px;font-weight:700;color:var(--gold)">${fmt(o.totalGeneral||0)}</div>
+    </div>
+  </div>`).join('');
+}
+
+function verODS(folio){
+  const o=lDB().find(x=>x.folio===folio);if(!o)return;
+  $('mo-ods-title').textContent=`${o.folio} — ${o.fallecido||'—'}`;
+  $('mo-ods-body').innerHTML=`
+    <div style="font-size:13px;display:flex;flex-direction:column;gap:10px">
+      <div class="g2">
+        <div><div style="color:var(--text3)">Contratante</div><div>${o.contratante||'—'}</div></div>
+        <div><div style="color:var(--text3)">Teléfono</div><div>${o.telefono||'—'}</div></div>
+      </div>
+      <div><div style="color:var(--text3)">Dirección</div><div>${[o.direccionCalle,o.direccionColonia,o.direccionLocalidad,o.direccionMunicipio].filter(Boolean).join(', ')||'—'}</div></div>
+      <div class="div"></div>
+      <div class="g2">
+        <div><div style="color:var(--text3)">Servicio</div><div>${o.modalidadServicio||'—'}</div></div>
+        <div><div style="color:var(--text3)">Velación</div><div>${o.modalidadVelacion||'—'}</div></div>
+      </div>
+      ${o.modalidadVelacion==='DOMICILIO'?`<div class="g2">
+        <div><div style="color:var(--text3)">Instalación</div><div>${fechaPlano(o.fechaInstalacion)||'—'}</div></div>
+        <div><div style="color:var(--text3)">Recolección</div><div style="color:var(--amber)">${fechaPlano(o.fechaRecoleccion)||'—'}</div></div>
+      </div>`:''}
+      ${o.kmTraslado>0?`<div><div style="color:var(--text3)">Traslado</div><div>${o.destinoNombre||'—'} · ${o.kmTraslado} km · ${fmt(o.costoTraslado||0)}</div></div>`:''}
+      <div class="div"></div>
+      ${o.destinoTipo==='FORANEO'?`<div class="g2">
+        <div><div style="color:var(--text3)">Lugar de Salida</div><div>${o.foraneoLugarSalida==='FUNERARIA'?'Funeraria':o.foraneoLugarSalida==='DOMICILIO'?'Domicilio':'—'}</div></div>
+        <div><div style="color:var(--text3)">Hora de Salida</div><div>${o.foraneoHoraSalida||'—'}</div></div>
+      </div>`:o.modalidadServicio==='CREMACION'?`<div class="g2">
+        <div><div style="color:var(--text3)">Crematorio</div><div>${o.crematorio||'—'}</div></div>
+        <div><div style="color:var(--text3)">Fecha Cremación</div><div>${fechaPlano(o.fechaCremacion)||'—'}</div></div>
+      </div>
+      <div class="g2" style="margin-top:6px">
+        <div><div style="color:var(--text3)">Horarios</div><div>Salida ${o.salidaCremacion||'—'} · Misa ${o.horaMisaCrem||'—'}</div></div>
+        <div><div style="color:var(--text3)">Hora Cremación</div><div style="color:var(--amber)">${o.horaCremacion||'—'}</div></div>
+      </div>`:`<div class="g2">
+        <div><div style="color:var(--text3)">Panteón</div><div>${o.lugSepelio||'—'}</div></div>
+        <div><div style="color:var(--text3)">Fecha Inhumación</div><div>${fechaPlano(o.fechaSepelio)||'—'}</div></div>
+      </div>
+      <div class="g2" style="margin-top:6px">
+        <div><div style="color:var(--text3)">Horarios</div><div>Salida ${o.salidaTraslado||'—'} · Misa ${o.horaMisa||'—'}</div></div>
+        <div><div style="color:var(--text3)">Hora Sepelio</div><div style="color:var(--amber)">${o.horaSepelio||'—'}</div></div>
+      </div>`}
+      <div class="div"></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Total</span><span style="color:var(--gold);font-weight:800;font-size:18px">${fmt(o.totalGeneral||0)}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Anticipo</span><span>${fmt(o.anticipo||0)}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--red);font-weight:700">Restante</span><span style="color:var(--red);font-weight:700">${fmt(o.restante||0)}</span></div>
+      ${o.tienePagare==='SI'?`<div class="div"></div>
+        <div style="background:rgba(201,168,76,.08);border:1px solid var(--golddim);border-radius:var(--r);padding:10px;font-size:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:6px">📄 PAGARÉ</div>
+          <div>Deudor: <strong>${o.nombreDeudor||'—'}</strong> · ${o.telefonoDeudor||''}</div>
+          <div>Monto: <strong>${fmt(o.montoPagare||0)}</strong> · Vence: ${fechaPlano(o.vencimientoPagare)||'—'}</div>
+          <div style="color:var(--text3);margin-top:4px;font-size:11px">${o.cantidadLetras||''}</div>
+        </div>`:''
+      }
+      ${o.anotaciones?`<div><div style="color:var(--text3)">Anotaciones</div><div>${o.anotaciones}</div></div>`:''}
+      <div class="div"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${esAdmin()?`<button class="bg bsm" onclick="cambiarEst('${o.folio}','ACTIVA')">Activa</button>`:''}
+        ${esAdmin()?`<button class="bo bsm" onclick="cambiarEst('${o.folio}','CERRADA')">Cerrar ODS</button>`:''}
+        <button class="bo bsm" onclick="equipoRecogido('${o.folio}')">📦 Equipo Recogido</button>
+        <button class="bo bsm" onclick="closeMo('mo-ods');abrirEdicionLogistica('${o.folio}')">🕐 Actualizar Logística</button>
+        <button class="bo bsm" onclick="closeMo('mo-ods');verExpedienteDeFolio('${o.folio}')">📄 Expediente</button>
+        <button class="bo bsm" onclick="closeMo('mo-ods');enviarODSPorWhatsapp('${o.folio}')">📤 Enviar ODS</button>
+        ${esAdmin()?`<button class="br bsm" onclick="elimODS('${o.folio}')">🗑</button>`:''}
+      </div>
+    </div>`;
+  $('mo-ods').classList.add('show');
+}
+function cambiarEst(folio,est){
+  if(!requiereAdmin('⚠ Solo el Administrador puede cerrar o reactivar órdenes')) return;
+  const db=lDB();const i=db.findIndex(o=>o.folio===folio);if(i<0)return;
+  const o=db[i];
+  const eraCerrada=o.estatus==='CERRADA';
+  o.estatus=est;sDB(db);
+  // Al CERRAR la orden, las piezas reservadas se eliminan definitivamente del inventario
+  if(est==='CERRADA'&&!eraCerrada) eliminarPiezasDeOrden(o);
+  closeMo('mo-ods');cargarODS();updDash();toast(`${folio} → ${est}`)
+}
+function equipoRecogido(folio){const db=lDB();const i=db.findIndex(o=>o.folio===folio);if(i<0)return;db[i].estatusEquipo='RECOGIDO';sDB(db);closeMo('mo-ods');cargarODS();updDash();toast('Equipo marcado RECOGIDO')}
+function elimODS(folio){
+  if(!requiereAdmin('⚠ Solo el Administrador puede eliminar órdenes')) return;
+  if(!confirm(`¿Eliminar ${folio}?`))return;
+  const o=lDB().find(x=>x.folio===folio);
+  // Si la orden no estaba cerrada, la pieza solo estaba reservada: se libera de vuelta
+  if(o&&o.estatus!=='CERRADA') liberarPiezasDeOrden(o);
+  sDB(lDB().filter(x=>x.folio!==folio));closeMo('mo-ods');cargarODS();updDash();toast('ODS eliminada')
+}
+
+/* ── EQUIPOS ── */
+function cargarEquipos(){
+  const ods=lDB();
+  const hoyD=new Date();hoyD.setHours(0,0,0,0);
+  const eq=ods.filter(o=>o.modalidadVelacion==='DOMICILIO'&&o.estatusEquipo==='ACTIVO');
+  let v=0,u=0,p=0,ok=0;
+  const items=eq.map(o=>{
+    let d=999;
+    if(o.fechaRecoleccion){const r=new Date(o.fechaRecoleccion);r.setHours(0,0,0,0);d=Math.ceil((r-hoyD)/(864e5))}
+    if(d<0)v++;else if(d<=2)u++;else if(d<=5)p++;else ok++;
+    const col=d<0?'var(--red)':d<=2?'var(--amber)':d<=5?'var(--blue)':'var(--green)';
+    const lbl=d<0?`Vencido ${-d}d`:d<=2?`Urgente ${d}d`:d<=5?`Próximo ${d}d`:`OK ${d}d`;
+    return`<div class="card" style="border-left:3px solid ${col};margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:11px;color:var(--gold);font-weight:700">${o.folio}</div><div style="font-size:14px">${o.fallecido||'—'}</div></div>
+        <span class="badge" style="background:${col}22;color:${col}">${lbl}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-top:5px">Recolección: ${fechaPlano(o.fechaRecoleccion)||'—'} · Equipo: ${o.equipoVelacion||'Sin detalle'}</div>
+    </div>`;
+  });
+  $('eq-v').textContent=v;$('eq-u').textContent=u;$('eq-p').textContent=p;$('eq-ok').textContent=ok;
+  $('lista-eq').innerHTML=items.length?items.join(''):'<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px 0">Sin equipos activos.</div>';
+}
+
+/* ── PAGOS ── */
+function cargarPagos(){
+  const ods=lDB().filter(o=>+o.restante>0);
+  $('total-pend').textContent=fmt(ods.reduce((s,o)=>s+(+o.restante||0),0));
+
+  // Resumen de abonos pendientes de confirmar (solo visible y relevante para Administrador)
+  const pendientes=lAbonos().filter(a=>a.estado==='pendiente');
+  const elPend=$('resumen-abonos-pend');
+  if(elPend){
+    if(esAdmin()&&pendientes.length){
+      const totalPend=pendientes.reduce((s,a)=>s+(+a.monto||0),0);
+      elPend.style.display='block';
+      elPend.innerHTML=`<div class="card" style="border-color:var(--amber)">
+        <div style="font-weight:700;color:var(--amber)">🕐 ${pendientes.length} abono(s) pendientes de confirmar en caja</div>
+        <div style="font-size:13px;color:var(--text2)">Suman ${fmt(totalPend)} · revísalos en cada orden abajo</div>
+      </div>`;
+    }else{
+      elPend.style.display='none';elPend.innerHTML='';
+    }
+  }
+
+  $('lista-pg').innerHTML=ods.length?ods.map(o=>`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-size:11px;color:var(--gold);font-weight:700">${o.folio}</div>
+      <div style="font-size:14px">${o.fallecido||'—'}</div>
+      <div style="font-size:12px;color:var(--text3)">${o.contratante||'—'} · ${o.telefono||'—'}</div>
+      ${o.tienePagare==='SI'?`<div style="font-size:11px;color:var(--amber)">📄 Con pagaré · Vence ${fechaPlano(o.vencimientoPagare)||'—'}</div>`:''}
+      </div>
+      <div style="text-align:right"><div style="color:var(--red);font-weight:700;font-size:16px">${fmt(o.restante)}</div><div style="font-size:11px;color:var(--text3)">pendiente</div></div>
+    </div>
+    ${verAbonosDe(o.folio)}
+    <button class="bg bsm" style="width:100%;margin-top:9px" onclick="abrirAbono('${o.folio}')">💰 Registrar Abono / Pago Parcial</button>
+  </div>`).join(''):'<div style="color:var(--green);font-size:13px;text-align:center;padding:30px 0">✅ Sin pagos pendientes</div>';
+}
+
+/* ── COLABORADORES ── */
+function registrarColab(){
+  const id=($('c-id')||{value:''}).value.trim();
+  const nom=($('c-nom')||{value:''}).value.trim();
+  const pin=($('c-pin')||{value:''}).value.trim();
+  if(!id||!nom||!pin){toast('⚠ ID, nombre y PIN son obligatorios');return}
+  if(pin.length!==4||!/^\d+$/.test(pin)){toast('⚠ PIN debe ser 4 dígitos');return}
+  const datos={
+    idColaborador:id,fechaIngreso:($('c-fecha')||{value:''}).value,
+    nombreCompleto:nom,puesto:($('c-puesto')||{value:''}).value,
+    domicilio:($('c-dom')||{value:''}).value,telefono:($('c-tel')||{value:''}).value,
+    familiarNombre:($('c-fam')||{value:''}).value,familiarTelefono:($('c-fam-tel')||{value:''}).value,
+    usuario:($('c-user')||{value:''}).value.trim(),
+    contrasena:($('c-pass')||{value:''}).value,
+    pin,estatus:'ACTIVO'
+  };
+  const emp=lEmp();const idx=emp.findIndex(e=>e.idColaborador===id);
+  if(idx>=0)emp[idx]={...emp[idx],...datos};else emp.push(datos);
+  sEmp(emp);
+  encolar({accion:'guardarColaborador',datos});
+  toast(`✅ ${nom} registrado · PIN: ${pin}`);
+  ['c-id','c-nom','c-pin','c-tel','c-fecha','c-fam','c-fam-tel','c-dom','c-user','c-pass'].forEach(x=>{const el=$(x);if(el)el.value=''});
+  renderColab();
+}
+function renderColab(){
+  const emp=lEmp();
+  $('lista-colab').innerHTML=emp.length?emp.map(e=>`<div class="card" style="padding:10px 12px;margin-bottom:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-size:14px;font-weight:700">${e.nombreCompleto}</div>
+      <div style="font-size:12px;color:var(--text2)">${e.puesto} · ID: ${e.idColaborador}</div>
+      <div style="font-size:12px;color:var(--text3)">Tel: ${e.telefono||'—'} · PIN: ${'•'.repeat((e.pin||'').length)}
+      ${e.usuario?` · @${e.usuario}`:''}</div></div>
+      <span class="badge ${e.estatus==='ACTIVO'?'bg-g':'bg-gr'}">${e.estatus}</span>
+    </div>
+  </div>`).join(''):'<div style="color:var(--text3);font-size:13px">Sin colaboradores.</div>';
+}
+
+/* ── NUBE ── */
+function initNube(){
+  $('sc-url').value=ST.url;
+  $('lbl-sync').textContent=(()=>{const ls=localStorage.getItem(SK);return ls?new Date(ls).toLocaleString('es-MX'):'Nunca.'})();
+}
+function guardarUrl(){
+  const url=$('sc-url').value.trim();
+  if(url&&!url.startsWith('https://')){{toast('⚠ URL inválida');return}}
+  ST.url=url;localStorage.setItem(UK,url);
+  toast(url?'✅ Enlace guardado':'URL eliminada');
+  updDash();
+}
+async function probarConexion(){
+  const url=$('sc-url').value.trim();
+  if(!url){toast('⚠ Ingresa URL primero');return}
+  toast('⏳ Probando…',1500);
+  try{
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({accion:'ping'})});
+    const d=await r.json();
+    toast(d.ok?'✅ '+d.mensaje:'❌ '+(d.mensaje||'Error'));
+  }catch(e){toast('❌ Sin respuesta del servidor. Verifica la URL e implementación.')}
+}
+function encolar(item){
+  ST.q.push({...item,ts:Date.now()});
+  localStorage.setItem(QK,JSON.stringify(ST.q));
+  $('est-q').textContent=ST.q.length;
+}
+async function sincronizarTodo(silencioso=false){
+  if(!ST.url){if(!silencioso)toast('⚠ Configura URL primero');return}
+  if(!ST.online){if(!silencioso)toast('⚠ Sin conexión');return}
+  if(!silencioso)toast('⏳ Sincronizando…',2000);
+  try{
+    const r=await api({
+      accion:'sincronizarTodo',
+      ods:lDB(),
+      colaboradores:lEmp(),
+      abonos:lAbonos()
+    });
+    if(r.ok){
+      if(r.ods&&r.ods.length){
+        const local=lDB(),folios=new Set(local.map(x=>x.folio));
+        r.ods.forEach(ro=>{if(!folios.has(ro.folio))local.push(ro)});
+        sDB(local);
+      }
+      if(r.colaboradores&&r.colaboradores.length)sEmp(r.colaboradores);
+      if(r.abonos&&r.abonos.length){
+        const localAb=lAbonos();
+        const porId={};localAb.forEach(a=>{porId[a.id]=a});
+        r.abonos.forEach(ra=>{porId[ra.id]=ra}); // el servidor manda la versión más reciente (incluye estado)
+        sAbonos(Object.values(porId));
+      }
+      ST.q=[];localStorage.setItem(QK,'[]');
+      const now=new Date().toISOString();localStorage.setItem(SK,now);
+      const lbl=new Date(now).toLocaleString('es-MX');
+      $('lbl-sync').textContent=lbl;$('est-sync').textContent=lbl;$('est-q').textContent=0;
+      $('sync-log').textContent='✅ '+r.mensaje+' · '+lbl;
+      updDash();if(!silencioso)toast('✅ Sincronización completa');
+    }else{if(!silencioso)toast('❌ '+(r.mensaje||r.error||'Error'))}
+  }catch(e){if(!silencioso)toast('❌ Error: '+e.message)}
+}
+function copiarInstrucciones(){
+  navigator.clipboard.writeText('Descarga Code.gs (versión demo) y pégalo en script.google.com').then(()=>toast('📋 Copiado'));
+}
+function resetLocal(){
+  if(!confirm('¿Borrar TODOS los datos locales?'))return;
+  [DB,EK,QK,SK,ABK].forEach(k=>localStorage.removeItem(k));
+  ST.q=[];ST.ods=[];ST.emps=[];
+  toast('🗑 Datos locales eliminados');updDash();
+}
+
+/* ── MODAL ── */
+function closeMo(id){$(id).classList.remove('show')}
+
+/* ── FIRMA EN CANVAS (responsiva, táctil + mouse) ── */
+let _firmaCtx=null, _firmaDrawing=false, _firmaTieneTrazo=false;
+function initFirmaCanvas(){
+  const canvas=$('firma-canvas');
+  if(!canvas)return;
+  const wrap=$('firma-wrap');
+  const ratio=window.devicePixelRatio||1;
+  const w=wrap.clientWidth, h=window.innerWidth>=700?200:160;
+  canvas.style.height=h+'px';
+  canvas.width=w*ratio; canvas.height=h*ratio;
+  canvas.style.width=w+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(ratio,ratio);
+  ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#0f172a';
+  _firmaCtx=ctx;
+  _firmaTieneTrazo=false;
+
+  function pos(e){
+    const r=canvas.getBoundingClientRect();
+    const t=e.touches?e.touches[0]:e;
+    return {x:t.clientX-r.left,y:t.clientY-r.top};
+  }
+  function start(e){e.preventDefault();_firmaDrawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)}
+  function move(e){if(!_firmaDrawing)return;e.preventDefault();const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();_firmaTieneTrazo=true}
+  function end(e){_firmaDrawing=false}
+
+  canvas.onmousedown=start; canvas.onmousemove=move; canvas.onmouseup=end; canvas.onmouseleave=end;
+  canvas.ontouchstart=start; canvas.ontouchmove=move; canvas.ontouchend=end;
+}
+function limpiarFirma(){
+  if(_firmaCtx){const c=$('firma-canvas');_firmaCtx.clearRect(0,0,c.width,c.height);}
+  _firmaTieneTrazo=false;
+  const est=$('firma-estado');if(est){est.textContent='Sin firmar';est.style.color='var(--text3)'}
+}
+function guardarFirmaLocal(){
+  if(!_firmaTieneTrazo){toast('⚠ Solicite al contratante que firme primero');return}
+  const canvas=$('firma-canvas');
+  const b64=canvas.toDataURL('image/png');
+  _firmaPendiente=b64;
+  const db=lDB();const i=db.findIndex(o=>o.folio===_folioActual);
+  if(i>=0){
+    db[i].firmaContratanteB64=b64;db[i].firmaFecha=new Date().toISOString();sDB(db);
+    encolar({accion:'guardarFirma',datos:{folio:_folioActual,firmaB64:b64,creadoPor:ST.user?ST.user.nombreCompleto:''}});
+  }
+  const est=$('firma-estado');if(est){est.textContent='✅ Firma confirmada y guardada';est.style.color='var(--green)'}
+  toast('✅ Firma guardada');
+}
+
+// Reajustar el canvas si cambia el tamaño de pantalla (responsivo)
+window.addEventListener('resize',()=>{ if($('page-nueva')&&$('page-nueva').classList.contains('act')) initFirmaCanvas(); });
+
+/* ════════════════════════════════════════════════════════════
+   EXPEDIENTE IMPRIMIBLE: HOJA DE SERVICIO + CONTRATO + PAGARÉ
+   Cada documento = 1 hoja carta, sin saltos internos.
+   Usa los datos guardados de la ODS (o el formulario en vivo si aún no se guardó).
+════════════════════════════════════════════════════════════ */
+
+// Construye la lista de renglones de inventario igual que la hoja de servicio impresa
+function _itemsExpediente(o){
+  const items=[];
+  if(o.modalidadServicio==='INHUMACION'){
+    if((+o.costoAtaud||0)>0||o.ataudNombre)
+      items.push([`ADQUISICIÓN DE ATAÚD: ${o.ataudNombre||'—'}`, +o.costoAtaud||0]);
+  }else{
+    if((+o.costoUrna||0)>0||o.urnaNombre)
+      items.push([`PAQUETE DE CREMACIÓN: ${o.urnaNombre||'—'} (${o.tipoCremacion==='DIRECTA'?'CREMACIÓN DIRECTA':'CON VELACIÓN'})`, +o.costoUrna||0]);
+    if(o.urnaCambioId&&(+o.costoUrnaCambio||0)>0)
+      items.push([`CAMBIO DE URNA INCLUIDA POR: ${o.urnaCambioNombre||'—'}`, +o.costoUrnaCambio||0]);
+    if((+o.costoAdicionalCremacion||0)>0)
+      items.push([`CARGO ADICIONAL DE CREMACIÓN`, +o.costoAdicionalCremacion||0]);
+  }
+  if(o.embalsamado&&o.embalsamado!=='NINGUNO'){
+    const embMap={PATOLOGICO:'OPCIÓN TÉCNICA - PATOLÓGICO',MEDICO_LEGAL:'OPCIÓN TÉCNICA - MÉDICO LEGAL',PUTREFACTO:'OPCIÓN TÉCNICA - PUTREFACTO'};
+    items.push([`PREPARACIÓN / EMBALSAMADO: ${embMap[o.embalsamado]||o.embalsamado}`, +o.costoEmbalsamado||0]);
+  }
+  const tramMap={registro:'REGISTRO CIVIL',fge:'FGE / FISCALÍA',periciales:'SERVICIOS PERICIALES',cert:'CERTIFICACIÓN',p48:'PERMISO 48 HRS',traslado:'PERMISO DE TRASLADO'};
+  const tramCosto={cert:1000,p48:1000,traslado:1000};
+  (o.tramites||'').split(',').filter(Boolean).forEach(t=>items.push([`GESTIÓN DE TRÁMITE GUBERNAMENTAL: ${tramMap[t]||t}`, tramCosto[t]||0]));
+  if(o.modalidadVelacion==='SALA')
+    items.push([`VELACIÓN EN SALA INSTITUCIONAL: USO DE INSTALACIONES - ${o.salaVelacion||'—'}`, +o.costoSala||0]);
+  else if(o.modalidadVelacion==='DOMICILIO')
+    items.push([`VELACIÓN EN DOMICILIO: EQUIPO EN COMODATO (${(o.equipoVelacion||'').split(',').filter(Boolean).map(e=>{
+      if(e==='cande2')return'CANDELEROS (2 PZAS)';
+      if(e==='cande4')return'CANDELEROS (4 PZAS)';
+      return {biombo:'BIOMBO',base:'BASE',cristo:'CRISTO'}[e]||e;
+    }).join(', ')||'—'})`,0]);
+  const insMap={cruz:'CRUZ DE MADERA DE VELACIÓN',cirios:'CIRIOS PARAFINA EXTRAGRANDE'};
+  (o.insumos||'').split(',').filter(Boolean).forEach(i=>items.push([`INSUMO ENTREGADO: ${insMap[i]||i}`,0]));
+  if(o.destinoTipo==='FORANEO')
+    items.push([`TRASLADO FORÁNEO ADICIONAL: DESTINO A ${(o.destinoNombre||'—').toUpperCase()} (${o.kmTraslado||0} KILÓMETROS)`, +o.costoTraslado||0]);
+  if((+o.costoExcesoPeso||0)>0)
+    items.push([`CARGO POR EXCESO DE PESO`, +o.costoExcesoPeso||0]);
+  if(o.objetoCuerpo&&o.objetoCuerpo!=='NINGUNO'){
+    const objMap={MARCAPASOS:'MARCAPASOS (RETIRO PREVIO OBLIGATORIO)',DENTADURA:'DENTADURA POSTIZA',CATETER:'CATÉTER / VÍA'};
+    items.push([`OBJETO EN EL CUERPO: ${objMap[o.objetoCuerpo]||o.objetoCuerpo}`, +o.costoObjetoCuerpo||0]);
+  }
+  if((+o.otrosCargos||0)>0)
+    items.push([`OTROS CARGOS / EXTRAS`, +o.otrosCargos||0]);
+  return items;
+}
+
+function _firmaImgHTML(o){
+  return o&&o.firmaContratanteB64
+    ? `<img class="firma-print" src="${o.firmaContratanteB64}"/>`
+    : `<div style="height:55px"></div>`;
+}
+
+// Sello oficial de la funeraria. SELLO_HUERTA_B64 se define más abajo;
+// si está vacío, se muestra un placeholder de texto en su lugar.
+function _selloHTML(){
+  if(typeof SELLO_HUERTA_B64!=='undefined' && SELLO_HUERTA_B64){
+    return `<img class="firma-print" src="${SELLO_HUERTA_B64}" style="max-height:65px"/>`;
+  }
+  return `<div style="height:55px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:8pt;border:1px dashed #ccc;border-radius:50%;width:65px;height:65px;margin:0 auto;text-align:center;line-height:1.1">SELLO<br>OFICIAL</div>`;
+}
+
+// Sección de logística del documento impreso: solo aparece si ya se capturó
+// al menos un dato (panteón/crematorio/horarios), ya que normalmente se llenan
+// varias horas después de creada la orden.
+function _seccionLogisticaHTML(o){
+  const esForaneo=o.destinoTipo==='FORANEO';
+  const esCrem=o.modalidadServicio==='CREMACION';
+
+  if(esForaneo){
+    const datos=[o.foraneoLugarSalida,o.foraneoHoraSalida,o.destinoNombre];
+    if(!datos.some(Boolean)) return '';
+    return `<div class="doc-sec-title">Logística de Traslado Foráneo</div>
+    <div class="doc-row2">
+      <div><b>Destino:</b> ${o.destinoNombre||'—'}</div>
+      <div><b>Lugar de Salida:</b> ${o.foraneoLugarSalida==='FUNERARIA'?'Funeraria':o.foraneoLugarSalida==='DOMICILIO'?'Domicilio':'—'}</div>
+      <div><b>Hora de Salida:</b> ${o.foraneoHoraSalida||'—'}</div>
+    </div>`;
+  }
+  if(esCrem){
+    const datos=[o.crematorio,o.fechaCremacion,o.salidaCremacion,o.horaMisaCrem,o.horaCremacion];
+    if(!datos.some(Boolean)) return '';
+    return `<div class="doc-sec-title">Logística de Cremación</div>
+    <div class="doc-row2">
+      <div><b>Crematorio:</b> ${o.crematorio||'—'}</div>
+      <div><b>Fecha de Cremación:</b> ${fechaPlano(o.fechaCremacion)||'—'}</div>
+      <div><b>Hora Salida de Velación:</b> ${o.salidaCremacion||'—'}</div>
+      <div><b>Hora de Misa:</b> ${o.horaMisaCrem||'—'}</div>
+      <div><b>Hora de Cremación:</b> ${o.horaCremacion||'—'}</div>
+    </div>`;
+  }
+  // Inhumación local
+  const datos=[o.lugSepelio,o.fechaSepelio,o.salidaTraslado,o.horaMisa,o.horaSepelio];
+  if(!datos.some(Boolean)) return '';
+  return `<div class="doc-sec-title">Logística de Sepelio</div>
+  <div class="doc-row2">
+    <div><b>Panteón:</b> ${o.lugSepelio||'—'}</div>
+    <div><b>Fecha de Inhumación:</b> ${fechaPlano(o.fechaSepelio)||'—'}</div>
+    <div><b>Hora Salida del Domicilio:</b> ${o.salidaTraslado||'—'}</div>
+    <div><b>Hora de Misa:</b> ${o.horaMisa||'—'}</div>
+    <div><b>Hora de Sepelio:</b> ${o.horaSepelio||'—'}</div>
+  </div>`;
+}
+
+// ── DOCUMENTO 1: HOJA DE SERVICIO (ODS) ──
+function _docHojaServicio(o){
+  const items=_itemsExpediente(o);
+  const dirTitular=[o.direccionCalle,o.direccionColonia,o.direccionLocalidad,o.direccionMunicipio].filter(Boolean).join(', ')||'—';
+  const filas=items.map(([desc,costo],i)=>`<tr><td style="text-align:center;width:24px">${i+1}</td><td>${desc}</td><td style="text-align:right;width:90px">${fmt(costo)}</td></tr>`).join('')
+    || `<tr><td colspan="3" style="text-align:center;color:#777">Sin conceptos capturados</td></tr>`;
+  return `
+  <div class="doc-print">
+    <div class="doc-hd">
+      <h1>FUNERARIA DEMO S.A. DE C.V.</h1>
+      <div class="sub">${FUNERARIA_ADDR}</div>
+      <div class="sub" style="font-weight:700;margin-top:4px">HOJA DE CONTROL Y COORDINACIÓN LOGÍSTICA DE SERVICIO</div>
+      <div class="tag">HOJA DE SERVICIO (ODS) — ${o.folio||_folioActual}</div>
+      <div style="font-size:8.5pt;color:#666;margin-top:5px">Asesor / Vendedor: <b>${o.creadoPor||'—'}</b></div>
+    </div>
+
+    <div class="doc-sec-title">Datos Identificativos del Contratante (Titular)</div>
+    <div class="doc-row2">
+      <div><b>Nombre del Titular:</b> ${o.contratante||'—'}</div>
+      <div><b>Teléfono:</b> ${o.telefono||'—'}</div>
+    </div>
+    <div style="font-size:9.5pt;margin-bottom:4px"><b>Domicilio Registrado:</b> ${dirTitular}</div>
+
+    <div class="doc-sec-title">Datos Identificativos del Finado</div>
+    <div class="doc-row2">
+      <div><b>Fallecido / Finado:</b> ${o.fallecido||'—'}</div>
+      <div><b>Fecha de Atención:</b> ${(o.fechaCreacion||'').slice(0,10)||hoy()}</div>
+    </div>
+
+    ${_seccionLogisticaHTML(o)}
+
+    <div class="doc-sec-title">Modalidad de Servicio e Inventario Operativo Adquirido</div>
+    <table>
+      <thead><tr><th style="width:24px">N°</th><th>Descripción del Artículo / Producto / Gestión Capturada</th><th style="width:90px">Costo Parcial</th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table>
+
+    <div class="doc-sec-title">Resumen de Cuenta Financiera General</div>
+    <table style="margin-bottom:4px">
+      <tr><td>Subtotal Extras / Productos</td><td style="text-align:right;width:120px">${fmt(o.subtotal)}</td></tr>
+      <tr><td>Descuento Autorizado</td><td style="text-align:right">-${fmt(o.descuento)}</td></tr>
+      <tr><td>${(+o.iva>0)?'I.V.A. Trasladado (16%)':'I.V.A. (no aplica)'}</td><td style="text-align:right">${fmt(o.iva)}</td></tr>
+      <tr class="doc-total-row"><td>Total Neto Liquidable</td><td style="text-align:right">${fmt(o.totalGeneral)}</td></tr>
+      <tr><td>Anticipo Pagado${o.tienePagare==='SI'?` (referencia pactada: ${o.porcentajeAnticipo||0}%)`:''}</td><td style="text-align:right">${fmt(o.anticipo)}</td></tr>
+      <tr class="doc-total-row"><td>Saldo Restante por Cobrar</td><td style="text-align:right">${fmt(o.restante)}</td></tr>
+    </table>
+
+    <div class="doc-foot">
+      <div><div style="height:55px"></div><div class="ln"></div>CONTRATANTE<br>${o.contratante||'—'}</div>
+      <div>${_selloHTML()}<div class="ln"></div>FUNERARIA DEMO S.A. DE C.V.</div>
+    </div>
+  </div>`;
+}
+
+// ── DOCUMENTO 2: CONTRATO DE ADHESIÓN ──
+function _docContrato(o){
+  return `
+  <div class="doc-print">
+    <div class="doc-hd">
+      <h1>CONTRATO DE ADHESIÓN DE SERVICIOS FUNERARIOS</h1>
+      <div class="sub">REGISTRADO ANTE PROFECO BAJO NORMATIVAS VIGENTES</div>
+      <div class="tag">CONTRATO DE ADHESIÓN — ${o.folio||_folioActual}</div>
+    </div>
+    <p class="doc-clause">Contrato que celebran por una parte <b>SERVICIOS FUNERARIOS DEMO S.A. DE C.V.</b>, en adelante
+    denominada "LA EMPRESA", y por la otra el deudor/titular cuyos datos se asientan en la Hoja de Servicio correspondiente,
+    denominado en lo sucesivo "EL CONTRATANTE", al tenor de las siguientes cláusulas operativas:</p>
+
+    <p class="doc-clause"><b>PRIMERA (OBJETO):</b> LA EMPRESA se obliga a prestar los servicios funerarios especificados de mutuo
+    acuerdo con EL CONTRATANTE, incluyendo la preparación estética, los trámites necesarios, la dotación de ataúd o urna
+    descritos y la logística de velación correspondiente de acuerdo a la ley de salud vigente.</p>
+
+    <p class="doc-clause"><b>SEGUNDA (PRECIO Y CONDICIONES):</b> EL CONTRATANTE se obliga a pagar a LA EMPRESA la cantidad
+    total neta descrita en el cuadro financiero. Los pagos se efectuarán en efectivo o mediante los canales autorizados.
+    Cualquier servicio, artículo o logística que no esté contemplado expresamente en la orden original será cobrado de
+    manera extraordinaria bajo la tasa del catálogo general de la funeraria.</p>
+
+    <p class="doc-clause"><b>TERCERA (EQUIPO DE VELACIÓN EN DOMICILIO):</b> El equipamiento de velación entregado en comodato
+    transitorio para domicilio (biombos, bases de ataúd, candeleros, cristo) es propiedad exclusiva de LA EMPRESA. EL
+    CONTRATANTE asume la responsabilidad civil de su cuidado por un periodo máximo de 12 días naturales fijos. El retraso
+    o maltrato del equipo generará sanciones financieras extraordinarias.</p>
+
+    <p class="doc-clause"><b>CUARTA (TRÁMITES Y DOCUMENTOS):</b> LA EMPRESA brindará la debida gestoría con la diligencia
+    correspondiente ante las autoridades sanitarias, Registro Civil o Fiscalía local para la obtención de actas de defunción
+    o permisos de cremación/traslado. LA EMPRESA queda exenta de toda responsabilidad ante demoras causadas por las
+    instituciones gubernamentales o fallas en sistemas estatales locales.</p>
+
+    <p class="doc-clause"><b>QUINTA (INCUMPLIMIENTO DE SALDOS):</b> En caso de retraso en la liquidación del saldo remanente
+    insoluto, se pacta expresamente una tasa de interés moratorio del 5% mensual. El cobro del adeudo podrá ser ejercido
+    mediante instrumentos legales o por medio del pagaré mercantil que corre de forma paralela al presente contrato de
+    adhesión.</p>
+
+    <p class="doc-clause"><b>SEXTA (JURISDICCIÓN):</b> Para todo lo relativo a la interpretación, cumplimiento y ejecución del
+    presente acuerdo contractual, ambas partes se someten libremente a las leyes competentes de la jurisdicción de la ciudad
+    de Ciudad Demo, renunciando expresamente a cualquier otro fuero que por razón de domicilio pudiera
+    corresponderles.</p>
+
+    <div style="font-size:9.5pt;margin-top:8px">
+      <div><b>FECHA DE PACTO:</b> ${(o.fechaCreacion||'').slice(0,10)||hoy()} &nbsp; <b>LUGAR:</b> CIUDAD DEMO, MÉXICO</div>
+      <div><b>CLIENTE CONTRATANTE:</b> ${(o.contratante||'—').toUpperCase()}</div>
+      <div><b>FINADO COORDINADO:</b> ${(o.fallecido||'—').toUpperCase()}</div>
+    </div>
+
+    <div class="doc-foot">
+      <div>${_firmaImgHTML(o)}<div class="ln"></div>SUSCRIPTOR (CONTRATANTE)</div>
+      <div>${_selloHTML()}<div class="ln"></div>FUNERARIA DEMO S.A. DE C.V.</div>
+    </div>
+  </div>`;
+}
+
+// ── DOCUMENTO 3: PAGARÉ (solo si hay pago en parcialidades) ──
+function _docPagare(o){
+  if(o.tienePagare!=='SI') return '';
+  return `
+  <div class="doc-print">
+    <div class="doc-hd">
+      <h1>PAGARÉ INCONDICIONAL</h1>
+      <div class="sub">TÍTULO DE CRÉDITO BAJO LA LEY GENERAL DE TÍTULOS Y OPERACIONES DE CRÉDITO</div>
+      <div class="tag">PAGARÉ MERCANTIL — ${o.folio||_folioActual}</div>
+    </div>
+    <div class="doc-row2" style="font-size:11pt;font-weight:700;margin-top:6px">
+      <div>IMPORTE ${fmt(o.montoPagare)} M.N.</div>
+      <div>VENCIMIENTO ${fechaPlano(o.vencimientoPagare)||'—'}</div>
+    </div>
+    <p class="doc-clause" style="margin-top:12px">Debo y pagaré incondicionalmente por este Pagaré a la orden de
+    <b>SERVICIOS FUNERARIOS DEMO S.A. DE C.V.</b>, en la ciudad de Ciudad Demo, la cantidad exacta de:</p>
+    <p style="text-align:center;font-weight:700;font-size:11pt;margin:10px 0">( ${o.cantidadLetras||numLetras(o.montoPagare)} )</p>
+    <p class="doc-clause">que corresponde al saldo insoluto de los servicios contratados con fecha de expedición
+    ${(o.fechaCreacion||'').slice(0,10)||hoy()}.</p>
+    <p class="doc-clause">En caso de no liquidarse este título mercantil a su fecha de vencimiento fijada el
+    ${fechaPlano(o.vencimientoPagare)||'—'}, el deudor se obliga a pagar un interés moratorio a razón del 5% mensual sobre el saldo
+    insoluto hasta su total liquidación, reservándose el acreedor el ejercicio de cobro judicial de conformidad con el
+    Código de Comercio vigente.</p>
+
+    <div style="font-size:9.5pt;margin-top:10px">
+      <div><b>SUSCRIPTOR (DEUDOR):</b> ${(o.nombreDeudor||'—').toUpperCase()} &nbsp; <b>TELÉFONO DEUDOR:</b> ${o.telefonoDeudor||'—'}</div>
+      <div><b>DOMICILIO DEUDOR:</b> ${o.domicilioDeudor||'—'}</div>
+      <div><b>INE / RFC DEUDOR:</b> ${o.ineDeudor||'S/N'}</div>
+    </div>
+
+    <div class="doc-foot" style="grid-template-columns:1fr">
+      <div>${_firmaImgHTML(o)}<div class="ln"></div>FIRMA DEL SUSCRIPTOR (DEUDOR)<br><span style="font-size:8pt">Acepto incondicionalmente el pago de este título</span></div>
+    </div>
+  </div>`;
+}
+
+function _construirExpedienteHTML(o){
+  return _docHojaServicio(o) + _docContrato(o) + _docPagare(o);
+}
+
+function verExpediente(){ verExpedienteDeFolio(_folioActual); }
+function verExpedienteDeFolio(folio){
+  const db=lDB();
+  let o=db.find(x=>x.folio===folio);
+  if(!o && folio===_folioActual) o=recopilar(); // orden aún no guardada: usar formulario en vivo
+  $('mo-contrato').dataset.folio=folio;
+  if(!o){toast('⚠ No se encontró la orden '+folio);return}
+  const html=_construirExpedienteHTML(o);
+
+  // print-area: HTML real, tal cual se imprimirá
+  $('print-area').innerHTML = html;
+
+  // Vista previa a escala dentro del modal: se parsea el DOM real (más robusto que regex)
+  // y cada .doc-print se envuelve en un contenedor ya dimensionado al tamaño escalado,
+  // para que el scale no provoque overflow horizontal ni traslapes verticales.
+  const SCALE=0.42; // 7.5in*0.42≈3.15in de ancho, cabe en pantallas desde ~340px
+  const tmp=document.createElement('div');
+  tmp.innerHTML=html;
+  const docs=tmp.querySelectorAll('.doc-print');
+  const wrapDiv=document.createElement('div');
+  wrapDiv.style.display='flex';wrapDiv.style.flexDirection='column';wrapDiv.style.gap='14px';wrapDiv.style.alignItems='center';
+  docs.forEach(d=>{
+    const box=document.createElement('div');
+    box.style.width=(7.5*SCALE)+'in';
+    box.style.height=(10.1*SCALE)+'in';
+    box.style.overflow='hidden';
+    d.style.transform=`scale(${SCALE})`;
+    d.style.transformOrigin='top left';
+    d.style.boxShadow='0 2px 10px rgba(0,0,0,.35)';
+    box.appendChild(d);
+    wrapDiv.appendChild(box);
+  });
+  $('mo-contrato-body').innerHTML='';
+  $('mo-contrato-body').appendChild(wrapDiv);
+  $('mo-contrato').classList.add('show');
+}
+function imprimirExpediente(){
+  window.print();
+}
+
+// Genera un PDF real (descargable) del expediente a partir del HTML ya
+// renderizado en #print-area, usando html2canvas + jsPDF (cargados por CDN).
+// Cada .doc-print se captura como imagen y se coloca en una página tamaño carta.
+async function descargarPDFExpediente(folio){
+  const docs=document.querySelectorAll('#print-area .doc-print');
+  if(!docs.length){toast('⚠ No hay expediente generado para descargar');return null}
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({unit:'in',format:'letter'});
+  for(let i=0;i<docs.length;i++){
+    const canvas=await html2canvas(docs[i],{scale:2,backgroundColor:'#ffffff'});
+    const img=canvas.toDataURL('image/jpeg',0.92);
+    if(i>0)pdf.addPage('letter');
+    pdf.addImage(img,'JPEG',0,0,8.5,11);
+  }
+  const nombreArchivo=`Expediente_${folio}.pdf`;
+  pdf.save(nombreArchivo);
+  return nombreArchivo;
+}
+
+// "Enviar ODS": genera y descarga el PDF automáticamente, y abre WhatsApp para
+// elegir el contacto. WhatsApp (app o web) no permite adjuntar archivos de forma
+// automática desde una página por seguridad; el PDF recién descargado se adjunta
+// con 1 toque desde el selector de archivos de WhatsApp.
+async function enviarODSPorWhatsapp(folio){
+  const db=lDB();
+  const o=db.find(x=>x.folio===folio);
+  if(!o){toast('⚠ No se encontró la orden '+folio);return}
+
+  verExpedienteDeFolio(folio); // construye el HTML en #print-area (necesario antes de capturar)
+  await new Promise(r=>setTimeout(r,250)); // dar tiempo a que el DOM pinte antes de capturar
+  toast('📄 Generando PDF…',1600);
+  const archivo=await descargarPDFExpediente(folio);
+  closeMo('mo-contrato');
+  if(!archivo)return;
+
+  const mensaje=`Hola ${o.contratante||''}, le compartimos el expediente del servicio de ${o.fallecido||'—'} (folio ${folio}). Adjunto el PDF con el detalle completo.`;
+  const telDigits=(o.telefono||'').replace(/\D/g,'');
+  // Si hay teléfono capturado, abrir el chat directo con ese número; si no, abrir
+  // el selector general de WhatsApp para elegir el contacto manualmente.
+  const url=telDigits
+    ? `https://wa.me/52${telDigits}?text=${encodeURIComponent(mensaje)}`
+    : `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+  setTimeout(()=>{
+    toast('📎 Ahora adjunta el PDF descargado desde WhatsApp');
+    window.open(url,'_blank');
+  },500);
+}
+
+/* ── ABONOS / PAGOS PARCIALES ── */
+function lAbonos(){return JSON.parse(localStorage.getItem(ABK)||'[]')}
+function sAbonos(d){localStorage.setItem(ABK,JSON.stringify(d))}
+/* ── ACTUALIZAR LOGÍSTICA (horarios/lugar capturados horas después) ──
+   Disponible para cualquier usuario con acceso a la orden, ya que la
+   información debe estar disponible para todo el equipo cuanto antes. */
+function abrirEdicionLogistica(folio){
+  const o=lDB().find(x=>x.folio===folio);
+  if(!o){toast('Folio no encontrado');return}
+  $('log-folio-disp').textContent=folio;
+  $('mo-logistica').dataset.folio=folio;
+
+  const esLocal=o.modalidadServicio==='INHUMACION'&&o.destinoTipo!=='FORANEO';
+  const esCrem=o.modalidadServicio==='CREMACION';
+  const esForaneo=o.destinoTipo==='FORANEO';
+
+  $('log-blq-inhum-local').style.display=esLocal?'block':'none';
+  $('log-blq-crem').style.display=esCrem?'block':'none';
+  $('log-blq-foraneo').style.display=esForaneo?'block':'none';
+
+  $('log-panteon').value=o.lugSepelio||'';
+  $('log-fecha-sepelio').value=fechaPlano(o.fechaSepelio)||'';
+  $('log-salida').value=o.salidaTraslado||'';
+  $('log-misa').value=o.horaMisa||'';
+  $('log-sepelio').value=o.horaSepelio||'';
+
+  $('log-crematorio').value=o.crematorio||'';
+  $('log-fecha-crem').value=fechaPlano(o.fechaCremacion)||'';
+  $('log-salida-crem').value=o.salidaCremacion||'';
+  $('log-misa-crem').value=o.horaMisaCrem||'';
+  $('log-hora-crem').value=o.horaCremacion||'';
+
+  $('log-foraneo-salida-lugar').value=o.foraneoLugarSalida||'DOMICILIO';
+  $('log-foraneo-hora-salida').value=o.foraneoHoraSalida||'';
+
+  $('mo-logistica').classList.add('show');
+}
+function guardarLogistica(){
+  const folio=$('mo-logistica').dataset.folio;
+  const db=lDB();const idx=db.findIndex(x=>x.folio===folio);
+  if(idx<0){toast('Folio no encontrado');return}
+  const o=db[idx];
+
+  o.lugSepelio=$('log-panteon').value;
+  o.fechaSepelio=$('log-fecha-sepelio').value;
+  o.salidaTraslado=$('log-salida').value;
+  o.horaMisa=$('log-misa').value;
+  o.horaSepelio=$('log-sepelio').value;
+
+  o.crematorio=$('log-crematorio').value;
+  o.fechaCremacion=$('log-fecha-crem').value;
+  o.salidaCremacion=$('log-salida-crem').value;
+  o.horaMisaCrem=$('log-misa-crem').value;
+  o.horaCremacion=$('log-hora-crem').value;
+
+  o.foraneoLugarSalida=$('log-foraneo-salida-lugar').value;
+  o.foraneoHoraSalida=$('log-foraneo-hora-salida').value;
+
+  db[idx]=o;sDB(db);
+  encolar({accion:'actualizarODS',folio,datos:o});
+  closeMo('mo-logistica');
+  toast(`✅ Logística de ${folio} actualizada`);
+  cargarODS();updDash();
+}
+
+function abrirAbono(folio){
+  const db=lDB();const o=db.find(x=>x.folio===folio);
+  if(!o){toast('Folio no encontrado');return}
+  $('ab-folio').value=o.folio;
+  $('ab-contratante').value=o.contratante||'—';
+  $('ab-monto').value='';
+  $('ab-pct').value='';
+  $('ab-fecha').value=hoy();
+  $('ab-ref').value='';$('ab-nota').value='';
+  $('mo-abono').classList.add('show');
+}
+function ab_actualizarPct(){
+  const folio=$('ab-folio').value;
+  const db=lDB();const o=db.find(x=>x.folio===folio);
+  const total=+o?.totalGeneral||0;
+  const monto=(+($('ab-monto').value))||0;
+  $('ab-pct').value=total>0?Math.round((monto/total)*100):0;
+}
+function confirmarAbono(){
+  const folio=$('ab-folio').value;
+  const monto=(+($('ab-monto').value))||0;
+  if(!folio||monto<=0){toast('⚠ Ingresa un monto válido');return}
+  const db=lDB();const idx=db.findIndex(x=>x.folio===folio);
+  if(idx<0){toast('Folio no encontrado');return}
+  const o=db[idx];
+  const contratante=o.contratante||'';
+  const pct=(+o.totalGeneral)>0?Math.round((monto/(+o.totalGeneral))*100):0;
+  // Si lo registra el Administrador, se confirma de inmediato (ya pasó por caja).
+  // Si lo registra un empleado, queda pendiente hasta que el Administrador lo confirme.
+  const confirmadoYa=esAdmin();
+  const abono={
+    id:`AB-${Date.now()}`,folio,contratante,monto,porcentaje:pct,
+    fecha:$('ab-fecha').value||hoy(),metodo:$('ab-metodo').value,
+    referencia:($('ab-ref').value||'').trim(),nota:($('ab-nota').value||'').trim(),
+    cajero:ST.user?ST.user.nombreCompleto:'',
+    estado:confirmadoYa?'confirmado':'pendiente'
+  };
+  const abonos=lAbonos();abonos.push(abono);sAbonos(abonos);
+
+  if(confirmadoYa){
+    // Actualizar anticipo/restante acumulado de la ODS solo si ya está confirmado
+    o.anticipo=(+o.anticipo||0)+monto;
+    o.restante=Math.max((+o.totalGeneral||0)-(+o.anticipo||0),0);
+    db[idx]=o;sDB(db);
+    encolar({accion:'actualizarODS',folio,datos:o});
+  }
+  encolar({accion:'guardarAbono',datos:abono});
+
+  closeMo('mo-abono');
+  toast(confirmadoYa
+    ? `✅ Abono de ${fmt(monto)} confirmado para ${folio}`
+    : `🕐 Abono de ${fmt(monto)} registrado, pendiente de confirmar en caja`);
+  cargarPagos();updDash();
+}
+
+// El Administrador confirma un abono que un empleado registró como pendiente:
+// recién aquí se descuenta del saldo de la orden.
+function confirmarAbonoPendiente(abonoId){
+  if(!requiereAdmin('⚠ Solo el Administrador puede confirmar abonos')) return;
+  const abonos=lAbonos();
+  const i=abonos.findIndex(a=>a.id===abonoId);
+  if(i<0){toast('Abono no encontrado');return}
+  const abono=abonos[i];
+  if(abono.estado==='confirmado'){toast('Ese abono ya estaba confirmado');return}
+  abono.estado='confirmado';abonos[i]=abono;sAbonos(abonos);
+
+  const db=lDB();const idx=db.findIndex(o=>o.folio===abono.folio);
+  if(idx>=0){
+    const o=db[idx];
+    o.anticipo=(+o.anticipo||0)+(+abono.monto||0);
+    o.restante=Math.max((+o.totalGeneral||0)-(+o.anticipo||0),0);
+    db[idx]=o;sDB(db);
+    encolar({accion:'actualizarODS',folio:o.folio,datos:o});
+  }
+  encolar({accion:'guardarAbono',datos:abono});
+  toast(`✅ Abono de ${fmt(abono.monto)} confirmado para ${abono.folio}`);
+  cargarPagos();updDash();
+}
+
+function rechazarAbonoPendiente(abonoId){
+  if(!requiereAdmin('⚠ Solo el Administrador puede rechazar abonos')) return;
+  if(!confirm('¿Rechazar este abono? No se aplicará al saldo de la orden.'))return;
+  sAbonos(lAbonos().filter(a=>a.id!==abonoId));
+  toast('Abono rechazado');
+  cargarPagos();updDash();
+}
+
+function verAbonosDe(folio){
+  const abonos=lAbonos().filter(a=>a.folio===folio);
+  if(!abonos.length)return '<div style="color:var(--text3);font-size:12px;margin-top:6px">Sin abonos registrados.</div>';
+  return '<div style="margin-top:8px">'+abonos.map(a=>{
+    const pendiente=a.estado==='pendiente';
+    const filaInfo=`<span>${a.fecha} · ${a.metodo}${a.referencia?' · '+a.referencia:''}</span><span style="color:${pendiente?'var(--amber)':'var(--green)'}">${fmt(a.monto)} (${a.porcentaje}%)${pendiente?' · pendiente':''}</span>`;
+    if(pendiente && esAdmin()){
+      return `<div style="padding:6px 0;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;font-size:12px">${filaInfo}</div>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <button class="bg bsm" style="flex:1" onclick="confirmarAbonoPendiente('${a.id}')">✅ Confirmar</button>
+          <button class="br bsm" style="flex:1" onclick="rechazarAbonoPendiente('${a.id}')">✕ Rechazar</button>
+        </div>
+      </div>`;
+    }
+    return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-top:1px solid var(--border)">${filaInfo}</div>`;
+  }).join('')+'</div>';
+}
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded',()=>{
+  setOnline(navigator.onLine);
+  ST.url=localStorage.getItem(UK)||'';
+  setTimeout(()=>{$('loader').style.display='none'},600);
+  calcTotal();
+  // Mostrar nota offline si aplica
+  if(!navigator.onLine)$('offline-login-note').textContent='Sin internet — puedes iniciar sesión igual';
+});
+</script>
+</body>
+</html>
