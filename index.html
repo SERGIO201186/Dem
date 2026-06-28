@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -185,6 +184,13 @@ button:active{transform:scale(.97)}
 <div id="loader"><div class="spin"></div><div style="color:var(--text2);font-size:13px">Cargando sistema demo…</div></div>
 <div id="offbar">Sin conexión — Modo offline activo</div>
 
+<!-- ═══ DEMO BLOQUEADO ═══ -->
+<div id="demo-blocked" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:600;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
+  <div style="width:64px;height:64px;background:var(--red2);border-radius:14px;display:grid;place-items:center;font-size:30px;margin-bottom:20px">🔒</div>
+  <div style="font-size:20px;font-weight:800;margin-bottom:8px">Demo no disponible</div>
+  <div style="font-size:14px;color:var(--text3);max-width:280px;line-height:1.6">Este demo está temporalmente desactivado.<br>Comunícate con <strong style="color:var(--gold)">Funeraria Huerta</strong> para solicitar acceso.</div>
+</div>
+
 <!-- ═══ LOGIN ═══ -->
 <div id="login">
   <div class="l-logo">D</div>
@@ -242,10 +248,11 @@ button:active{transform:scale(.97)}
     <button class="ni" onclick="navTo('tablero')"><span class="ic">📋</span>Tablero Logístico</button>
     <button class="ni" onclick="navTo('equipos')"><span class="ic">📦</span>Equipos Velación<span class="nbdg" id="bdg-eq">0</span></button>
     <button class="ni" onclick="navTo('pagos')"><span class="ic">💰</span>Pagos Pendientes<span class="nbdg" id="bdg-pg">0</span></button>
-    <button class="ni" onclick="window.open(TIENDA_VIRTUAL_VISUAL_URL,'_blank')"><span class="ic">🛍</span>Tienda Virtual</button>
+
     <div class="nav-sec">Sistema</div>
     <button class="ni" data-admin-only onclick="navTo('colab')"><span class="ic">👥</span>Colaboradores</button>
-    <button class="ni" data-admin-only onclick="navTo('nube')"><span class="ic">☁️</span>Sincronización Nube</button>
+    <button class="ni" onclick="abrirCatalogoDemo()"><span class="ic">🛍</span>Tienda Virtual</button>
+    <button class="ni" id="btn-nube" data-admin-only onclick="navTo('nube')" style="display:none"><span class="ic">☁️</span>Sincronización Nube</button>
     <div class="sb-ft">
       <button class="ni bo" style="width:100%;justify-content:center;margin:0" onclick="logout()">🔐 Cerrar Sesión</button>
     </div>
@@ -849,6 +856,16 @@ button:active{transform:scale(.97)}
   </div>
 </div>
 
+<!-- MODAL CATÁLOGO TIENDA DEMO -->
+<div class="mo" id="mo-catalogo">
+  <div class="mb" style="max-width:660px">
+    <button class="mc" onclick="closeMo('mo-catalogo')">✕</button>
+    <div class="mt2">🛍 Catálogo — Inventario Demo</div>
+    <p style="font-size:12px;color:var(--text2);margin:-6px 0 12px">Productos disponibles en esta demostración.</p>
+    <div id="mo-catalogo-body"><div style="text-align:center;padding:30px;color:var(--text3)">Cargando catálogo…</div></div>
+  </div>
+</div>
+
 <div id="print-area" style="position:absolute;left:-9999px;top:0;width:8.5in"></div>
 
 <div id="toast"></div>
@@ -861,16 +878,23 @@ button:active{transform:scale(.97)}
 <script>
 const DB='huerta_ods_v2', EK='huerta_emp_v2', UK='huerta_url', SK='huerta_sync', QK='huerta_q_v2', ABK='huerta_abonos_v2';
 const FUNERARIA_ADDR = "Av. Demostración 100, Col. Ejemplo, C.P. 00000, Ciudad Demo";
-const TIENDA_VIRTUAL_VISUAL_URL = "about:blank"; // 👈 reemplaza con la URL visual de tu tienda demo, si tienes una
 const KM_RATE1=24, KM_RATE2=29, KM_BREAK=200; // hasta 200km: $24/km; >200km: $29/km
+/* ══════════════════════════════════════════════════
+   CONTROL DE ACCESO AL DEMO
+   ACTIVAR  → escribe cualquier texto en DEMO_TOKEN, ej. "huerta2026"
+   DESACTIVAR → deja DEMO_TOKEN como cadena vacía: ""
+   El usuario que recibe el demo NO puede modificar esto
+   (está en el archivo desplegado en GitHub Pages, solo tú tienes acceso al repo).
+══════════════════════════════════════════════════ */
+const DEMO_TOKEN = "huerta2026"; // ← cambia a "" para desactivar el demo
 // Sello oficial de la funeraria en base64 (data:image/png;base64,...). Se deja vacío
 // hasta tener la imagen real; mientras tanto se muestra un placeholder en los documentos.
 const SELLO_HUERTA_B64=""; // vacío en demo: se usa el placeholder de texto "SELLO OFICIAL"
 // Tienda virtual (inventario compartido): URL del Apps Script desplegado de la tienda.
-const TIENDA_URL="https://script.google.com/macros/s/AKfycbywZRq1VVMZ6VuUbHhlRxNDQz_0xYPH56IPbQHEfP0UOJ_5q0rUqRskcsGSsxIrHyExZw/exec";
+const TIENDA_URL="https://script.google.com/macros/s/AKfycbwdVni9UASSc5gIRk3VPpvk0Zx8vhAWEhso1CjEklx7Vi7GIE1QUp6HRt5ircTEs_1oxQ/exec";
 let _catalogoTienda=[]; // caché del catálogo cargado (productos segment="inmediato")
 
-let ST={user:null,online:navigator.onLine,url:localStorage.getItem(UK)||'https://script.google.com/macros/s/AKfycbwdVni9UASSc5gIRk3VPpvk0Zx8vhAWEhso1CjEklx7Vi7GIE1QUp6HRt5ircTEs_1oxQ/exec',page:'dash',ods:[],emps:[],q:JSON.parse(localStorage.getItem(QK)||'[]'),pin:'',loginTab:'pin'};
+let ST={user:null,online:navigator.onLine,url:localStorage.getItem(UK)||'https://script.google.com/macros/s/AKfycbywZRq1VVMZ6VuUbHhlRxNDQz_0xYPH56IPbQHEfP0UOJ_5q0rUqRskcsGSsxIrHyExZw/exec',page:'dash',ods:[],emps:[],q:JSON.parse(localStorage.getItem(QK)||'[]'),pin:'',loginTab:'pin'};
 let _firmaPendiente=null;
 
 const $=id=>document.getElementById(id);
@@ -1763,6 +1787,41 @@ function resetLocal(){
 /* ── MODAL ── */
 function closeMo(id){$(id).classList.remove('show')}
 
+/* ── CATÁLOGO DEMO ── */
+async function abrirCatalogoDemo(){
+  closeSB();
+  $('mo-catalogo').classList.add('show');
+  const body=$('mo-catalogo-body');
+  body.innerHTML='<div style="text-align:center;padding:30px;color:var(--text3)">Cargando catálogo…</div>';
+  try{
+    const datos=await tiendaGet();
+    const todos=Array.isArray(datos)?datos:[];
+    if(!todos.length){body.innerHTML='<div style="color:var(--text3);text-align:center;padding:20px">Sin productos en el catálogo.</div>';return}
+    const catMap={'Inhumacion':'⚰️ Inhumación','Cremacion':'🔥 Cremación','Cremación':'🔥 Cremación','Urna':'🏺 Urnas','futuro':'📋 Previsión'};
+    const grupos={};
+    todos.forEach(p=>{
+      const cat=catMap[p.categoria]||p.categoria||'Otros';
+      if(!grupos[cat])grupos[cat]=[];
+      grupos[cat].push(p);
+    });
+    body.innerHTML=Object.entries(grupos).map(([cat,items])=>`
+      <div style="margin-bottom:14px">
+        <div class="st" style="margin-bottom:8px">${cat}</div>
+        ${items.map(p=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:600">${p.nombre||'—'}</div>
+              <div style="font-size:11px;color:var(--text3)">${p.descripcion||''}</div>
+              <span class="badge ${p.estado==='disponible'?'bg-g':'bg-a'}" style="margin-top:3px">${p.estado||'disponible'}</span>
+            </div>
+            <div style="font-size:15px;font-weight:800;color:var(--gold);white-space:nowrap;margin-left:12px">${fmt(p.precio||0)}</div>
+          </div>`).join('')}
+      </div>`).join('');
+  }catch(e){
+    body.innerHTML='<div style="color:var(--red);text-align:center;padding:20px">Error al cargar catálogo.</div>';
+  }
+}
+
 /* ── FIRMA EN CANVAS (responsiva, táctil + mouse) ── */
 let _firmaCtx=null, _firmaDrawing=false, _firmaTieneTrazo=false;
 function initFirmaCanvas(){
@@ -2331,8 +2390,15 @@ function verAbonosDe(folio){
 
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded',()=>{
+  // Control de acceso al demo
+  if(!DEMO_TOKEN){
+    document.getElementById('demo-blocked').style.display='flex';
+    document.getElementById('login').style.display='none';
+    document.getElementById('loader').style.display='none';
+    return;
+  }
   setOnline(navigator.onLine);
-  ST.url=localStorage.getItem(UK)||'';
+  ST.url=localStorage.getItem(UK)||ST.url;
   setTimeout(()=>{$('loader').style.display='none'},600);
   calcTotal();
   // Mostrar nota offline si aplica
