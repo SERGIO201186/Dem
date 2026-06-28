@@ -1,112 +1,76 @@
-// FarmaPos PRO — Service Worker v2.0
-// Permite que la app funcione sin internet después de la primera carga
+// FarmaPos PRO — Service Worker v3.0
+const CACHE = 'farmapos-v3';
 
-const CACHE_NAME = 'farmapos-v2';
-
-// Archivos que se guardan en caché para funcionar offline
 const ASSETS = [
-  './farmapos-pro.html',
+  './',
+  './index.html',
   './manifest.json',
-  // Fuentes de Google (se cachean en primera visita)
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
-// ── INSTALL: guardar archivos en caché ────────────────────────────────────────
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('[SW] Cacheando assets de FarmaPos');
-      // Cachear lo que se pueda, ignorar errores en recursos externos
-      return Promise.allSettled(
-        ASSETS.map(url =>
-          cache.add(url).catch(err => console.warn('[SW] No se pudo cachear:', url, err))
-        )
-      );
-    }).then(() => self.skipWaiting())
+// INSTALL
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(cache =>
+      Promise.allSettled(ASSETS.map(url => cache.add(url).catch(()=>{})))
+    ).then(() => self.skipWaiting())
   );
 });
 
-// ── ACTIVATE: limpiar cachés viejas ──────────────────────────────────────────
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => {
-            console.log('[SW] Eliminando caché vieja:', key);
-            return caches.delete(key);
-          })
+// ACTIVATE — limpiar cachés viejas
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+// FETCH
+self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+
+  // Llamadas a Apps Script/Sheets — siempre red, nunca caché
+  if (url.hostname.includes('script.google.com') || url.hostname.includes('googleapis.com')) {
+    e.respondWith(
+      fetch(e.request).catch(() =>
+        new Response(JSON.stringify({ok:false,error:'Sin conexión'}),
+          {headers:{'Content-Type':'application/json'}})
       )
-    ).then(() => self.clients.claim())
-  );
-});
+    );
+    return;
+  }
 
-// ── FETCH: estrategia Cache-First para assets, Network-First para Sheets ──────
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-
-  // Las llamadas a Google Apps Script SIEMPRE van a la red (no cachear datos)
-  if (url.hostname === 'script.google.com' ||
-      url.hostname === 'sheets.googleapis.com') {
-    event.respondWith(
-      fetch(event.request).catch(() =>
-        new Response(JSON.stringify({ ok: false, error: 'Sin conexión a internet' }), {
-          headers: { 'Content-Type': 'application/json' }
+  // Fuentes Google — cache first
+  if (url.hostname.includes('fonts.google') || url.hostname.includes('fonts.gstatic')) {
+    e.respondWith(
+      caches.match(e.request).then(cached => cached ||
+        fetch(e.request).then(r => {
+          const clone = r.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return r;
         })
       )
     );
     return;
   }
 
-  // Las fuentes de Google: Cache-First
-  if (url.hostname === 'fonts.googleapis.com' ||
-      url.hostname === 'fonts.gstatic.com') {
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        if (cached) return cached;
-        return fetch(event.request).then(response => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
-        }).catch(() => cached || new Response('', { status: 408 }));
-      })
-    );
-    return;
-  }
-
-  // El archivo principal HTML y demás assets: Cache-First con fallback a red
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) {
-        // Actualizar en background (Stale-While-Revalidate)
-        fetch(event.request).then(response => {
-          if (response && response.status === 200) {
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, response));
-          }
-        }).catch(() => {});
-        return cached;
-      }
-      // No está en caché: ir a la red
-      return fetch(event.request).then(response => {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+  // Todo lo demás — cache first, red como fallback
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      const networkFetch = fetch(e.request).then(r => {
+        if (r && r.status === 200 && r.type !== 'opaque') {
+          const clone = r.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
         }
-        return response;
-      }).catch(() =>
-        // Offline y no hay caché: mostrar mensaje
-        new Response('<h2 style="font-family:sans-serif;text-align:center;margin-top:40px">Sin conexión — FarmaPos no está disponible offline todavía. Ábrelo una vez con internet.</h2>', {
-          headers: { 'Content-Type': 'text/html' }
-        })
-      );
+        return r;
+      }).catch(() => cached);
+      return cached || networkFetch;
     })
   );
 });
 
-// ── MENSAJE: forzar actualización desde la app ────────────────────────────────
-self.addEventListener('message', event => {
-  if (event.data === 'skipWaiting') {
-    self.skipWaiting();
-  }
+self.addEventListener('message', e => {
+  if (e.data === 'skipWaiting') self.skipWaiting();
 });
