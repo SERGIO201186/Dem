@@ -1,0 +1,17 @@
+{
+  "name": "NovaPOS PRO",
+  "short_name": "NovaPOS",
+  "description": "Sistema POS con facturación — ventas, inventario y caja para cualquier negocio",
+  "start_url": "./novapos-pro.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
+  "orientation": "any",
+  "lang": "es-MX",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "icon-nova-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-nova-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
